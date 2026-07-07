@@ -1,0 +1,199 @@
+# ==============================================================================
+# Supabase Project Configuration
+# This file IS version-controlled. Do NOT commit secrets here.
+# Use environment variables via env() for anything sensitive.
+# ==============================================================================
+
+# A string used to distinguish different Supabase projects on the same host.
+# Defaults to the working directory name when running `supabase init`.
+project_id = "famtastic"
+
+[api]
+enabled = true
+# Port to use for the local API URL.
+port = 54321
+# Schemas to expose in your API. Tables, views and stored procedures in this
+# schema will get API endpoints. `public` and `graphql_public` schemas are
+# always included.
+schemas = ["public", "graphql_public"]
+# Extra schemas to add to the search_path of every request.
+extra_search_path = ["public", "extensions"]
+# The maximum number of rows returns from a view, table, or stored procedure.
+# Limits payload size for accidental or malicious requests.
+max_rows = 1000
+
+[api.tls]
+enabled = false
+
+[db]
+# Port to use for the local database URL.
+port = 54322
+# Port used by db diff command to initialise the shadow database.
+shadow_port = 54320
+# The database major version to use. This has to be the same as your remote
+# database's. Run `SHOW server_version;` on the remote database to check.
+major_version = 15
+
+[db.pooler]
+enabled = false
+# Port to use for the local connection pooler.
+port = 54329
+# Specifies when a server connection can be reused by other clients.
+# Configure one of the supported pooler modes: `transaction`, `session`.
+pool_mode = "transaction"
+# How many server connections to allow per user/database pair.
+default_pool_size = 20
+# Maximum number of client connections allowed.
+max_client_conn = 100
+
+[realtime]
+enabled = true
+# Bind realtime via either IPv4 or IPv6. (default: IPv6)
+# ip_version = "IPv6"
+# The minimum token length in bytes used to verify auth tokens. (default: 16)
+# max_header_length = 4096
+
+[studio]
+enabled = true
+# Port to use for Supabase Studio.
+port = 54323
+# External URL of the API server that frontend connects to.
+api_url = "http://127.0.0.1"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+# Email testing server. Emails sent in development are saved here.
+[local_smtp]
+enabled = true
+port = 54324
+# smtp_port = 54325
+# pop3_port = 54326
+
+[storage]
+enabled = true
+# The maximum file size allowed (e.g. "5MB", "500KB").
+file_size_limit = "50MiB"
+
+[storage.image_transformation]
+enabled = true
+
+[auth]
+enabled = true
+# The base URL of your website. Used as an allow-list for redirects and for
+# constructing URLs used in emails.
+site_url = "http://127.0.0.1:3000"
+# A list of *exact* URLs that auth providers are permitted to redirect to post
+# authentication. Wildcards are NOT allowed for security reasons.
+additional_redirect_urls = [
+  "https://127.0.0.1:3000",
+  # Mobile deep-link callback (fill in real scheme when app is configured)
+  "famtastic://auth/callback",
+  "exp://127.0.0.1:19000/--/auth/callback"
+]
+# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour).
+jwt_expiry = 3600
+# If disabled, the refresh token will never expire.
+enable_refresh_token_rotation = true
+# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
+# Requires enable_refresh_token_rotation = true.
+refresh_token_reuse_interval = 10
+# Allow/disallow new user signups to your project.
+enable_signup = true
+# Allow/disallow anonymous sign-ins to your project.
+enable_anonymous_sign_ins = false
+# Allow/disallow testing manual linking of accounts.
+enable_manual_linking = false
+
+[auth.email]
+# Allow/disallow new user signups via email to your project.
+enable_signup = true
+# If enabled, a user will be required to confirm any email change on both the
+# old and new email addresses. If disabled, only the new email is required to
+# be confirmed.
+double_confirm_changes = true
+# OTP email verification is REQUIRED before the user can sign in.
+enable_confirmations = true
+# Controls the minimum amount of time that must pass before sending another
+# signup confirmation or password reset email.
+max_frequency = "60s"
+# Supabase will send a 6-digit OTP code (not a magic link) for signup confirmation.
+  otp_expiry = 600
+  otp_length = 6
+
+# Use a production-ready SMTP server.
+
+# [auth.email.smtp]
+# host = "smtp.sendgrid.net"
+# port = 587
+# user = "apikey"
+# pass = "env(SENDGRID_API_KEY)"
+# admin_email = "admin@example.com"
+# sender_name = "Example"
+
+# Uncomment to customize email template
+# [auth.email.template.invite]
+# subject = "You have been invited"
+# content_path = "./supabase/templates/invite.html"
+
+[auth.sms]
+enable_signup = true
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+# Configure one of the supported SMS providers: `twilio`, `twilio_verify`,
+# `messagebird`, `textlocal`, `vonage`.
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+message_service_sid = ""
+# DO NOT commit your Twilio auth token to git.
+# Instead, keep it in a .env file, referenced here via env().
+auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+
+[auth.sessions]
+# Force log out after the specified duration.
+# timebox = "8h"
+# Force log out if the user has been inactive longer than the specified duration.
+# inactivity_timeout = "8h"
+
+# Use an external OAuth provider. The full list of providers are:
+# `apple`, `azure`, `bitbucket`, `discord`, `facebook`, `github`, `gitlab`,
+# `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`, `twitter`,
+# `slack`, `spotify`, `workos`, `zoom`.
+# ─────────────────────────────────────────────────────────────────────────────
+# Apple Sign-In
+# Credentials: Apple Developer Portal → Certificates, Identifiers & Profiles
+#   client_id  = Services ID (e.g. com.propelius.famtastic.auth)
+#   secret     = Signed JWT built from: team_id + key_id + .p8 private key
+#                Use env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)
+# ─────────────────────────────────────────────────────────────────────────────
+[auth.external.apple]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_APPLE_CLIENT_ID)"
+# DO NOT commit your OAuth provider secret to git!
+secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
+# Redirect back to the app after Apple sign-in
+redirect_uri = "famtastic://auth/callback"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Google OAuth 2.0
+# Credentials: console.cloud.google.com → APIs & Services → OAuth 2.0 Client IDs
+#   Authorised redirect URI must include:
+#     https://<project-ref>.supabase.co/auth/v1/callback
+# ─────────────────────────────────────────────────────────────────────────────
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = true
+
+# [edge_functions]
+# enabled = true
+
+[analytics]
+enabled = false
+port = 54327
+# Configure one of the supported backends: `postgres`, `bigquery`.
+backend = "postgres"

@@ -1,0 +1,41 @@
+# ==============================================================================
+# .gitignore — Supabase / famtastic
+# ==============================================================================
+
+# ── Supabase local state (machine-specific, never commit) ─────────────────────
+.supabase/
+
+# ── Environment files (contain secrets) ──────────────────────────────────────
+.env
+.env.*
+!.env.example       # DO commit the example template
+
+# ── Supabase auto-generated type files (regenerate via CLI) ──────────────────
+# Uncomment if you prefer to regenerate types in CI rather than committing them.
+# src/lib/database.types.ts
+
+# ── Editor / OS artefacts ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.idea/
+
+# ── Node / package managers ───────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+dist/
+build/
+.next/
+.nuxt/
+.output/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

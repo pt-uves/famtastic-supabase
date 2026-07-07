@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Auth Test</title>
+    <!-- Include Supabase JS from local node_modules instead of CDN -->
+    <script src="/node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 10px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 4px; margin-right: 5px; margin-bottom: 5px; }
+        button:hover { background: #005bb5; }
+        button.google { background: #db4437; }
+        button.google:hover { background: #b0362b; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h1>Supabase Auth Test</h1>
+    
+    <div class="card">
+        <h3>Google OAuth</h3>
+        <p>Ensure Google OAuth is enabled in <code>supabase/config.toml</code> and credentials are valid.</p>
+        <button class="google" onclick="signInWithGoogle()">Sign in with Google</button>
+    </div>
+
+    <div class="card">
+        <h3>Email & Password</h3>
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email" />
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" />
+        </div>
+        <button onclick="signUpWithEmail()">Sign Up</button>
+        <button onclick="signInWithEmail()">Sign In</button>
+        <button onclick="signInWithOtp()">Send Login OTP (No Password)</button>
+        
+        <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <h4>OTP Verification</h4>
+            <p style="font-size: 0.9em; color: #666;">Check your email for the 6-digit code</p>
+            <div class="input-group">
+                <input type="text" id="otp-code" placeholder="6-digit OTP Code" />
+            </div>
+            <button onclick="verifySignupOtp()">Verify Signup OTP</button>
+            <button onclick="verifyLoginOtp()">Verify Login OTP</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Session Status</h3>
+        <button onclick="checkSession()">Check Current Session</button>
+        <button onclick="signOut()" style="background: #333;">Sign Out</button>
+        <pre id="output">Output will appear here...</pre>
+    </div>
+
+    <script>
+        // Using the values from your local Supabase instance
+        const SUPABASE_URL = 'http://127.0.0.1:54321';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const out = document.getElementById('output');
+        function log(data) {
+            out.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Handle Google OAuth
+        async function signInWithGoogle() {
+            log('Starting Google OAuth flow...');
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+            });
+            if (error) log(error);
+            else log(data); // In a real app, this redirects the browser
+        }
+
+        // Handle Email Sign Up
+        async function signUpWithEmail() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            log('Signing up... Please check your email for the OTP.');
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Handle Email Sign In (Password)
+        async function signInWithEmail() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            log('Signing in...');
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Handle Email Sign In (OTP / Passwordless)
+        async function signInWithOtp() {
+            const email = document.getElementById('email').value;
+            log('Sending Login OTP... Please check your email.');
+            const { data, error } = await supabaseClient.auth.signInWithOtp({ email });
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Verify Signup OTP
+        async function verifySignupOtp() {
+            const email = document.getElementById('email').value;
+            const token = document.getElementById('otp-code').value;
+            log('Verifying Signup OTP...');
+            const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: 'signup' });
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Verify Login OTP
+        async function verifyLoginOtp() {
+            const email = document.getElementById('email').value;
+            const token = document.getElementById('otp-code').value;
+            log('Verifying Login OTP...');
+            const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: 'email' });
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Check Session
+        async function checkSession() {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) log(error);
+            else log(data);
+        }
+
+        // Sign Out
+        async function signOut() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) log(error);
+            else log('Signed out successfully.');
+        }
+
+        // Check session on load
+        checkSession();
+    </script>
+</body>
+</html>
