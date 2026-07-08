@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS your_table (
     id              UUID             PRIMARY KEY DEFAULT uuid_generate_v7(),
     name            TEXT             NOT NULL,
     status          your_enum_type   NOT NULL DEFAULT 'value1',
-    created_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- updated_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP -- Add only if needed, update manually
 );
 
 -- ----------------------------------------------------------------------------
@@ -39,11 +39,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_your_table_name ON your_table (name);
 -- TRIGGERS
 -- ----------------------------------------------------------------------------
 
-DROP TRIGGER IF EXISTS trigger_your_table_updated_at ON your_table;
-CREATE TRIGGER trigger_your_table_updated_at
-    BEFORE UPDATE ON your_table
+-- Note: We do NOT use triggers for updated_at. It should be updated manually.
+-- Example of a custom trigger:
+DROP TRIGGER IF EXISTS trigger_your_table_custom ON your_table;
+CREATE TRIGGER trigger_your_table_custom
+    BEFORE INSERT ON your_table
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION some_custom_function();
 
 -- ============================================================================
 -- COMMENTS SECTION
@@ -54,7 +56,7 @@ COMMENT ON COLUMN your_table.id IS 'Unique identifier (UUID v7).';
 COMMENT ON COLUMN your_table.name IS 'Display name.';
 COMMENT ON COLUMN your_table.status IS 'Lifecycle status.';
 COMMENT ON COLUMN your_table.created_at IS 'Record creation timestamp.';
-COMMENT ON COLUMN your_table.updated_at IS 'Last update timestamp, maintained by trigger.';
+-- COMMENT ON COLUMN your_table.updated_at IS 'Last update timestamp.';
 -- Repeat COMMENT ON TABLE and COMMENT ON COLUMN for milam_ and omnigrowthos_ tables
 ```
 
@@ -83,14 +85,14 @@ Use `uuid_generate_v7()` — never `gen_random_uuid()` or `uuid_generate_v4()`.
 
 ## Naming Conventions
 
-| Object            | Pattern                        | Example                     |
-| ----------------- | ------------------------------ | --------------------------- |
-| Table             | `<name>`                       | `store_visits`              |
-| Index             | `idx_<table>_<col>`            | `idx_store_visits_status`   |
-| Unique constraint | `uk_<table>_<col>`             | `uk_users_email`            |
-| Foreign key       | `fk_<table>_<referenced>`      | `fk_orders_customer`        |
-| Trigger           | `trigger_<table>_updated_at`   | `trigger_orders_updated_at` |
-| Policy            | `"<table>_<operation>_policy"` | `"orders_select_policy"`    |
+| Object            | Pattern                        | Example                          |
+| ----------------- | ------------------------------ | -------------------------------- |
+| Table             | `<name>`                       | `store_visits`                   |
+| Index             | `idx_<table>_<col>`            | `idx_store_visits_status`        |
+| Unique constraint | `uk_<table>_<col>`             | `uk_users_email`                 |
+| Foreign key       | `fk_<table>_<referenced>`      | `fk_orders_customer`             |
+| Trigger           | `trigger_<table>_<purpose>`    | `trigger_orders_calculate_total` |
+| Policy            | `"<table>_<operation>_policy"` | `"orders_select_policy"`         |
 
 ## Comments Section (Mandatory)
 

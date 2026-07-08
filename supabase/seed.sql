@@ -6,30 +6,17 @@
 -- Global reference/content data (safe to seed unconditionally)
 -- ---------------------------------------------------------
 
-insert into task_categories (id, family_id, name, color) values
-  ('11111111-0000-0000-0000-000000000001', null, 'Relationships/Family', '#F4A6A6'),
-  ('11111111-0000-0000-0000-000000000002', null, 'Chores', '#A6D8F4'),
-  ('11111111-0000-0000-0000-000000000003', null, 'School', '#F4E1A6'),
-  ('11111111-0000-0000-0000-000000000004', null, 'Health', '#A6F4C1')
+insert into task_categories (id, child_id, name, color_hex, is_system) values
+  ('11111111-0000-0000-0000-000000000001', null, 'Relationships/Family', '#F4A6A6', true),
+  ('11111111-0000-0000-0000-000000000002', null, 'Chores', '#A6D8F4', true),
+  ('11111111-0000-0000-0000-000000000003', null, 'School', '#F4E1A6', true),
+  ('11111111-0000-0000-0000-000000000004', null, 'Health', '#A6F4C1', true)
 ON CONFLICT (id) DO NOTHING;
 
-insert into coping_strategies (id, mood, title, icon_url, animation_key, is_global) values
-  ('22222222-0000-0000-0000-000000000001', 'angry', 'Count to Ten', null, 'breathe_slow', true),
-  ('22222222-0000-0000-0000-000000000002', 'overwhelmed', 'Deep Breathing', null, 'breathe_box', true),
-  ('22222222-0000-0000-0000-000000000003', 'calm', 'Keep Going', null, 'sparkle', true),
-  ('22222222-0000-0000-0000-000000000004', 'happy', 'Share the Joy', null, 'confetti', true)
-ON CONFLICT (id) DO NOTHING;
-
-insert into speech_exercises (id, target_word, difficulty, category, phonetic_hint) values
-  ('33333333-0000-0000-0000-000000000001', 'cat', 'easy', 'animals', 'k-a-t'),
-  ('33333333-0000-0000-0000-000000000002', 'rabbit', 'medium', 'animals', 'ra-bit'),
-  ('33333333-0000-0000-0000-000000000003', 'spaghetti', 'hard', 'food', 'spuh-ge-tee')
-ON CONFLICT (id) DO NOTHING;
-
-insert into badges (id, name, description) values
-  ('44444444-0000-0000-0000-000000000001', 'First Check-In', 'Completed your first check-in'),
-  ('44444444-0000-0000-0000-000000000002', '7-Day Streak', 'Checked in every day for a week'),
-  ('44444444-0000-0000-0000-000000000003', 'Word Master', 'Mastered 20 speech words')
+insert into speech_exercises (id, word, difficulty) values
+  ('33333333-0000-0000-0000-000000000001', 'cat', 'beginner'),
+  ('33333333-0000-0000-0000-000000000002', 'rabbit', 'intermediate'),
+  ('33333333-0000-0000-0000-000000000003', 'spaghetti', 'advanced')
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------
@@ -44,17 +31,19 @@ ON CONFLICT (id) DO NOTHING;
 --      re-run `supabase db reset` (seed.sql runs every reset).
 -- ---------------------------------------------------------
 
--- insert into families (id, name, created_by) values
+-- insert into families (id, name, owner_id) values
 --   ('11111111-1111-1111-1111-111111111111', 'Thompson Family', '<parent-1-auth-uid>');
 --
--- insert into family_members (family_id, profile_id, role) values
---   ('11111111-1111-1111-1111-111111111111', '<parent-1-auth-uid>', 'family_admin'),
---   ('11111111-1111-1111-1111-111111111111', '<parent-2-auth-uid>', 'family_member'),
---   ('11111111-1111-1111-1111-111111111111', '<child-1-auth-uid>', 'child'),
---   ('11111111-1111-1111-1111-111111111111', '<child-2-auth-uid>', 'child');
+-- insert into children (id, family_id, name) values
+--   ('33333333-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Child 1'),
+--   ('44444444-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Child 2');
 --
--- -- Provider scoped ONLY to child 1 — this is the row to test isolation against
--- insert into child_providers (child_member_id, provider_profile_id, provider_type, status, access_scope)
--- select id, '<provider-auth-uid>', 'therapist', 'active', '{speech,check_ins}'
--- from family_members
--- where family_id = '11111111-1111-1111-1111-111111111111' and profile_id = '<child-1-auth-uid>';
+-- insert into memberships (account_id, child_id, role_category, role_label, invite_status) values
+--   ('<parent-1-auth-uid>', '33333333-1111-1111-1111-111111111111', 'co_parent', 'Dad', 'accepted'),
+--   ('<parent-1-auth-uid>', '44444444-1111-1111-1111-111111111111', 'co_parent', 'Dad', 'accepted'),
+--   ('<parent-2-auth-uid>', '33333333-1111-1111-1111-111111111111', 'co_parent', 'Mom', 'accepted'),
+--   ('<parent-2-auth-uid>', '44444444-1111-1111-1111-111111111111', 'co_parent', 'Mom', 'accepted');
+--
+-- -- Provider scoped ONLY to child 1
+-- insert into memberships (account_id, child_id, role_category, role_label, invite_status) values
+--   ('<provider-auth-uid>', '33333333-1111-1111-1111-111111111111', 'therapist', 'Dr. Smith', 'accepted');

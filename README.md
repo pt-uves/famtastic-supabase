@@ -46,16 +46,23 @@ Local Studio: http://127.0.0.1:54323
 
 ### Commands
 
-| Task                    | Command                          |
-| ----------------------- | -------------------------------- |
-| New migration           | `npm run db:new -- <name>`       |
-| Apply locally           | `npm run db:reset`               |
-| Push to production      | `npm run db:push`                |
-| Preview production push | `npm run db:push:dry-run`        |
-| Capture schema diff     | `npm run db:diff:file -- <name>` |
-| Generate TS types       | `npm run types:generate`         |
-
-**📖 Read the full guide: [docs/MIGRATION_GUIDE.md](./docs/MIGRATION_GUIDE.md)**
+| Task                             | Command                          |
+| -------------------------------- | -------------------------------- |
+| Start local Supabase             | `npm run db:start`               |
+| Stop local Supabase              | `npm run db:stop`                |
+| Check local Supabase status      | `npm run db:status`              |
+| Apply migrations & reset locally | `npm run db:reset`               |
+| Apply migrations & seed locally  | `npm run db:seed`                |
+| Push migrations to remote        | `npm run db:push`                |
+| Preview push (dry run)           | `npm run db:push:dry-run`        |
+| View schema diff                 | `npm run db:diff`                |
+| Link to remote Supabase project  | `npm run db:link`                |
+| Pull changes from remote project | `npm run db:pull`                |
+| Lint database                    | `npm run db:lint`                |
+| Inspect database bloat           | `npm run db:inspect`             |
+| Generate TS types (local)        | `npm run types:generate`         |
+| Generate TS types (remote)       | `npm run types:generate:remote`  |
+| Capture schema diff (via script) | `npm run db:diff:file -- <name>` |
 
 ---
 
