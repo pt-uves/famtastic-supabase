@@ -36,8 +36,13 @@ Deno.serve(async (req: Request) => {
       .eq("id", data.child_id)
       .single();
 
-    const families = child?.families as unknown as { owner_id: string } | { owner_id: string }[] | null;
-    const ownerId = Array.isArray(families) ? families[0]?.owner_id : families?.owner_id;
+    const families = child?.families as unknown as
+      | { owner_id: string }
+      | { owner_id: string }[]
+      | null;
+    const ownerId = Array.isArray(families)
+      ? families[0]?.owner_id
+      : families?.owner_id;
 
     if (childError || ownerId !== user.id) {
       return err("Child not found or unauthorized", 403);
@@ -54,7 +59,8 @@ Deno.serve(async (req: Request) => {
 
     if (!accountId) {
       // Create auth user and send invite email
-      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email);
+      const { data: inviteData, error: inviteError } =
+        await supabaseAdmin.auth.admin.inviteUserByEmail(data.email);
       if (inviteError) throw inviteError;
       accountId = inviteData.user.id;
     }
@@ -71,7 +77,7 @@ Deno.serve(async (req: Request) => {
           invited_by: user.id,
           invite_status: "pending",
         },
-        { onConflict: "account_id,child_id" }
+        { onConflict: "account_id,child_id" },
       )
       .select()
       .single();
@@ -79,11 +85,16 @@ Deno.serve(async (req: Request) => {
     if (membershipError) throw membershipError;
 
     // TODO: We will implement exact call once email/push libraries are finalized.
-    console.log(`[TODO] Sent invitation email to ${data.email} for child ${data.child_id}`);
+    console.log(
+      `[TODO] Sent invitation email to ${data.email} for child ${data.child_id}`,
+    );
 
     return ok({ membership });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });

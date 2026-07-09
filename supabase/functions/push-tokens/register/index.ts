@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
           token: data.token,
           platform: data.platform,
         },
-        { onConflict: "user_id,token" }
+        { onConflict: "user_id,token" },
       );
 
     if (insertError) throw insertError;
@@ -35,6 +35,9 @@ Deno.serve(async (req: Request) => {
     return ok({ registered: true });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });

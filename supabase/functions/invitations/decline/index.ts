@@ -28,7 +28,8 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     if (fetchError) throw fetchError;
-    if (!membership) return err("Membership not found, unauthorized, or not pending", 403);
+    if (!membership)
+      return err("Membership not found, unauthorized, or not pending", 403);
 
     // Decline invite
     const { data: updatedMembership, error: updateError } = await supabaseAdmin
@@ -43,6 +44,9 @@ Deno.serve(async (req: Request) => {
     return ok({ membership: updatedMembership });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });

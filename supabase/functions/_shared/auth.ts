@@ -17,10 +17,13 @@ export const requireAuth = async (req: Request) => {
     {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false },
-    }
+    },
   );
 
-  const { data: { user }, error } = await supabaseClient.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabaseClient.auth.getUser();
 
   if (error || !user) {
     throw new Error("Invalid or expired token");

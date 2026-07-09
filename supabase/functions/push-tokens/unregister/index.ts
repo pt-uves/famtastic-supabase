@@ -12,7 +12,7 @@ Deno.serve(async (req: Request) => {
   if (corsResponse) return corsResponse;
 
   if (req.method !== "POST" && req.method !== "DELETE") {
-     return err("Method not allowed", 405);
+    return err("Method not allowed", 405);
   }
 
   try {
@@ -33,6 +33,9 @@ Deno.serve(async (req: Request) => {
     return ok({ unregistered: true });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });

@@ -20,18 +20,21 @@ Deno.serve(async (req: Request) => {
         const body = await req.json();
         return RequestSchema.parse(body);
       } catch (e) {
-        throw new Error(e instanceof z.ZodError ? e.errors[0].message : "Invalid JSON body");
+        throw new Error(
+          e instanceof z.ZodError ? e.errors[0].message : "Invalid JSON body",
+        );
       }
     })();
 
     const supabaseAdmin = createAdminClient();
 
     // 1. Check if the user already has a family
-    const { data: existingFamily, error: familyCheckError } = await supabaseAdmin
-      .from("families")
-      .select("id")
-      .eq("owner_id", user.id)
-      .maybeSingle();
+    const { data: existingFamily, error: familyCheckError } =
+      await supabaseAdmin
+        .from("families")
+        .select("id")
+        .eq("owner_id", user.id)
+        .maybeSingle();
 
     if (familyCheckError) throw familyCheckError;
 
@@ -61,6 +64,9 @@ Deno.serve(async (req: Request) => {
     return ok({ profile, family });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error.message.includes("Invalid") ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error.message.includes("Invalid") ? 400 : 500,
+    );
   }
 });

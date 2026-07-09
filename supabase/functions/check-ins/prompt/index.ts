@@ -27,8 +27,13 @@ Deno.serve(async (req: Request) => {
       .eq("id", data.child_id)
       .single();
 
-    const families = family?.families as unknown as { owner_id: string } | { owner_id: string }[] | null;
-    const ownerId = Array.isArray(families) ? families[0]?.owner_id : families?.owner_id;
+    const families = family?.families as unknown as
+      | { owner_id: string }
+      | { owner_id: string }[]
+      | null;
+    const ownerId = Array.isArray(families)
+      ? families[0]?.owner_id
+      : families?.owner_id;
 
     if (familyError || ownerId !== user.id) {
       return err("Child not found or unauthorized (must be parent)", 403);
@@ -54,12 +59,17 @@ Deno.serve(async (req: Request) => {
     if (!isScheduled) {
       // TODO: We will implement exact Expo Push call once libraries are finalized.
       // E.g. find push tokens for the child's active device
-      console.log(`[TODO] Dispatch Expo Push check-in prompt to child ${data.child_id}`);
+      console.log(
+        `[TODO] Dispatch Expo Push check-in prompt to child ${data.child_id}`,
+      );
     }
 
     return ok({ prompt });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });

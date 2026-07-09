@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     );
 
     const { error: authError } = await anonClient.auth.signInWithPassword({
@@ -48,8 +48,13 @@ Deno.serve(async (req: Request) => {
       .eq("id", data.child_id)
       .single();
 
-    const families = family?.families as unknown as { owner_id: string } | { owner_id: string }[] | null;
-    const ownerId = Array.isArray(families) ? families[0]?.owner_id : families?.owner_id;
+    const families = family?.families as unknown as
+      | { owner_id: string }
+      | { owner_id: string }[]
+      | null;
+    const ownerId = Array.isArray(families)
+      ? families[0]?.owner_id
+      : families?.owner_id;
 
     if (familyError || ownerId !== user.id) {
       return err("Child not found or unauthorized", 403);
@@ -69,6 +74,9 @@ Deno.serve(async (req: Request) => {
     return ok({ child_id: data.child_id, child_mode_enabled: false });
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e));
-    return err(error.message || "Internal Server Error", error instanceof z.ZodError ? 400 : 500);
+    return err(
+      error.message || "Internal Server Error",
+      error instanceof z.ZodError ? 400 : 500,
+    );
   }
 });
