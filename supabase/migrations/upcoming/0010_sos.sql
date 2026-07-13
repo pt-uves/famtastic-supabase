@@ -85,7 +85,7 @@ ALTER TABLE public.sos_events DROP CONSTRAINT IF EXISTS fk_sos_events_resolved_b
 ALTER TABLE public.sos_events ADD CONSTRAINT fk_sos_events_resolved_by
     FOREIGN KEY (resolved_by) REFERENCES public.profiles (id) ON DELETE SET NULL;
 
--- Active SOS lookup — the most performance-critical query (full-screen alert).
+-- Active SOS lookup - the most performance-critical query (full-screen alert).
 CREATE INDEX IF NOT EXISTS idx_sos_events_child_status
     ON public.sos_events (child_id, status);
 
@@ -112,7 +112,7 @@ ALTER TABLE public.sos_notifications ADD CONSTRAINT fk_sos_notifications_externa
 ALTER TABLE public.sos_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sos_notifications ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — sos_events
+-- POLICIES - sos_events
 
 DROP POLICY IF EXISTS "sos_events_select_policy" ON public.sos_events;
 CREATE POLICY "sos_events_select_policy" ON public.sos_events
@@ -134,7 +134,7 @@ CREATE POLICY "sos_events_update_policy" ON public.sos_events
         AND triggered_by_child = false  -- extra safety: children cannot resolve
     );
 
--- POLICIES — sos_notifications
+-- POLICIES - sos_notifications
 
 DROP POLICY IF EXISTS "sos_notifications_select_policy" ON public.sos_notifications;
 CREATE POLICY "sos_notifications_select_policy" ON public.sos_notifications
@@ -168,7 +168,7 @@ COMMENT ON COLUMN public.sos_events.resolved_by                     IS 'Adult me
 COMMENT ON COLUMN public.sos_events.resolved_at                     IS 'Timestamp when the SOS was resolved.';
 COMMENT ON COLUMN public.sos_events.notes                           IS 'Optional outcome notes added at resolve time.';
 COMMENT ON COLUMN public.sos_events.cooldown_until                  IS 'Timestamp until which new SOS triggers from this child should be ignored/debounced.';
-COMMENT ON COLUMN public.sos_events.created_at                      IS 'Row creation timestamp — the SOS trigger time.';
+COMMENT ON COLUMN public.sos_events.created_at                      IS 'Row creation timestamp - the SOS trigger time.';
 
 COMMENT ON TABLE  public.sos_notifications                          IS 'One delivery record per recipient per SOS event. Covers push (linked members) and SMS (external contacts).';
 COMMENT ON COLUMN public.sos_notifications.id                       IS 'Unique identifier (UUID v7).';

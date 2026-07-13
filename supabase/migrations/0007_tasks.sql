@@ -46,29 +46,35 @@ CREATE TABLE IF NOT EXISTS public.task_categories (
 -- ----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.tasks (
-    id                      UUID                    PRIMARY KEY DEFAULT uuid_generate_v7(),
-    child_id                UUID                    NOT NULL,
-    created_by              UUID                    NOT NULL,
-    category_id             UUID,
-    name                    TEXT                    NOT NULL,
-    description             TEXT,
-    due_at                  TIMESTAMPTZ,
-    priority                task_priority      NOT NULL DEFAULT 'medium',
-    status                  task_status        NOT NULL DEFAULT 'pending',
-    verification_type       task_verification  NOT NULL DEFAULT 'none',
-    reminder_at             TIMESTAMPTZ,
-    photo_proof_url         TEXT,
-    approved_by             UUID,
-    approved_at             TIMESTAMPTZ,
-    points_awarded          SMALLINT,
-    google_calendar_event_id TEXT,
-    created_at              TIMESTAMPTZ             NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at              TIMESTAMPTZ             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                          UUID                    PRIMARY KEY DEFAULT uuid_generate_v7(),
+    child_id                    UUID                    NOT NULL,
+    created_by                  UUID                    NOT NULL,
+    category_id                 UUID,
+    name                        TEXT                    NOT NULL,
+    description                 TEXT,
+    due_at                      TIMESTAMPTZ,
+    priority                    task_priority           NOT NULL DEFAULT 'medium',
+    status                      task_status             NOT NULL DEFAULT 'pending',
+    verification_type           task_verification       NOT NULL DEFAULT 'none',
+    photo_proof_url             TEXT,
+    approved_by                 UUID,
+    approved_at                 TIMESTAMPTZ,
+    points_awarded              SMALLINT,
+    google_calendar_event_id    TEXT,
+    created_at                  TIMESTAMPTZ             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMPTZ             NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_tasks_approval CHECK (
-        (verification_type = 'adult_approval' AND approved_by IS NOT NULL AND approved_at IS NOT NULL)
-        OR (verification_type <> 'adult_approval')
-        OR (approved_by IS NULL AND approved_at IS NULL)
+    -- Approval columns are set together or not at all.
+    CONSTRAINT chk_tasks_approval_pair CHECK (
+        (approved_by IS NULL) = (approved_at IS NULL)
+    ),
+    -- A task can only reach 'completed' once its required verification is satisfied:
+    -- photo_proof needs a photo, adult_approval needs an approver. 'none' is free.
+    CONSTRAINT chk_tasks_completion_verified CHECK (
+        status <> 'completed'
+        OR verification_type = 'none'
+        OR (verification_type = 'photo_proof'    AND photo_proof_url IS NOT NULL)
+        OR (verification_type = 'adult_approval' AND approved_by IS NOT NULL)
     ),
     CONSTRAINT chk_tasks_points CHECK (points_awarded >= 0 AND points_awarded <= 5)
 );
@@ -91,7 +97,7 @@ ALTER TABLE public.tasks ADD CONSTRAINT fk_tasks_child
 
 ALTER TABLE public.tasks DROP CONSTRAINT IF EXISTS fk_tasks_created_by;
 ALTER TABLE public.tasks ADD CONSTRAINT fk_tasks_created_by
-    FOREIGN KEY (created_by) REFERENCES public.profiles (id) ON DELETE RESTRICT;
+    FOREIGN KEY (created_by) REFERENCES public.profiles (id) ON DELETE CASCADE;
 
 ALTER TABLE public.tasks DROP CONSTRAINT IF EXISTS fk_tasks_category;
 ALTER TABLE public.tasks ADD CONSTRAINT fk_tasks_category
@@ -110,13 +116,24 @@ CREATE INDEX IF NOT EXISTS idx_tasks_child_due
     ON public.tasks (child_id, due_at);
 
 -- ============================================================================
+-- TRIGGERS
+-- ============================================================================
+
+-- Keep updated_at current on every change, including service-role writes.
+DROP TRIGGER IF EXISTS trigger_tasks_set_updated_at ON public.tasks;
+CREATE TRIGGER trigger_tasks_set_updated_at
+    BEFORE UPDATE ON public.tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_updated_at();
+
+-- ============================================================================
 -- RLS POLICIES
 -- ============================================================================
 
 ALTER TABLE public.task_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — task_categories
+-- POLICIES - task_categories
 
 DROP POLICY IF EXISTS "task_categories_select_policy" ON public.task_categories;
 CREATE POLICY "task_categories_select_policy" ON public.task_categories
@@ -148,7 +165,7 @@ CREATE POLICY "task_categories_delete_policy" ON public.task_categories
         OR (is_system = false AND owns_child(child_id))
     );
 
--- POLICIES — tasks
+-- POLICIES - tasks
 
 DROP POLICY IF EXISTS "tasks_select_policy" ON public.tasks;
 CREATE POLICY "tasks_select_policy" ON public.tasks
@@ -200,11 +217,10 @@ COMMENT ON COLUMN public.tasks.due_at                           IS 'Timestamp th
 COMMENT ON COLUMN public.tasks.priority                         IS 'Task urgency: low, medium, or high.';
 COMMENT ON COLUMN public.tasks.status                           IS 'Current lifecycle state of the task.';
 COMMENT ON COLUMN public.tasks.verification_type                IS 'How completion is verified: none, photo proof, or adult approval.';
-COMMENT ON COLUMN public.tasks.reminder_at                      IS 'Timestamp to send a push notification reminder.';
 COMMENT ON COLUMN public.tasks.photo_proof_url                  IS 'URL of the uploaded photo proof (Supabase Storage).';
 COMMENT ON COLUMN public.tasks.approved_by                      IS 'Adult member who approved the task completion.';
 COMMENT ON COLUMN public.tasks.approved_at                      IS 'Timestamp of approval.';
 COMMENT ON COLUMN public.tasks.points_awarded                   IS 'Fixed point amount awarded upon task completion.';
 COMMENT ON COLUMN public.tasks.google_calendar_event_id         IS 'External event ID for one-way Google Calendar sync.';
 COMMENT ON COLUMN public.tasks.created_at                       IS 'Row creation timestamp.';
-COMMENT ON COLUMN public.tasks.updated_at                       IS 'Last update timestamp — updated manually by the application.';
+COMMENT ON COLUMN public.tasks.updated_at                       IS 'Last-modified timestamp, stamped by the set_updated_at() trigger on every update.';

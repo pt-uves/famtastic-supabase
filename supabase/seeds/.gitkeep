@@ -1,0 +1,2 @@
+# Keep the seeds/ directory so config.toml [db.seed] glob resolves on fresh clones.
+# Generated local snapshots (*.local.sql) are gitignored - run `npm run db:snapshot`.

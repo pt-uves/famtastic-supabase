@@ -69,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_habit_logs_child_habit_date
 ALTER TABLE public.habits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.habit_logs ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — habits
+-- POLICIES - habits
 
 DROP POLICY IF EXISTS "habits_select_policy" ON public.habits;
 CREATE POLICY "habits_select_policy" ON public.habits
@@ -91,7 +91,7 @@ DROP POLICY IF EXISTS "habits_delete_policy" ON public.habits;
 CREATE POLICY "habits_delete_policy" ON public.habits
     FOR DELETE USING (owns_child(child_id));
 
--- POLICIES — habit_logs
+-- POLICIES - habit_logs
 
 DROP POLICY IF EXISTS "habit_logs_select_policy" ON public.habit_logs;
 CREATE POLICY "habit_logs_select_policy" ON public.habit_logs

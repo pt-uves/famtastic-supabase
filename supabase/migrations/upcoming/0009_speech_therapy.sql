@@ -153,7 +153,7 @@ ALTER TABLE public.child_custom_words ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.speech_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.speech_attempts ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — speech_exercises (global library)
+-- POLICIES - speech_exercises (global library)
 
 DROP POLICY IF EXISTS "speech_exercises_select_policy" ON public.speech_exercises;
 CREATE POLICY "speech_exercises_select_policy" ON public.speech_exercises
@@ -171,7 +171,7 @@ DROP POLICY IF EXISTS "speech_exercises_delete_policy" ON public.speech_exercise
 CREATE POLICY "speech_exercises_delete_policy" ON public.speech_exercises
     FOR DELETE USING (is_platform_admin());
 
--- POLICIES — child_custom_words
+-- POLICIES - child_custom_words
 
 DROP POLICY IF EXISTS "child_custom_words_select_policy" ON public.child_custom_words;
 CREATE POLICY "child_custom_words_select_policy" ON public.child_custom_words
@@ -193,7 +193,7 @@ DROP POLICY IF EXISTS "child_custom_words_delete_policy" ON public.child_custom_
 CREATE POLICY "child_custom_words_delete_policy" ON public.child_custom_words
     FOR DELETE USING (added_by = auth.uid() OR owns_child(child_id));
 
--- POLICIES — speech_sessions
+-- POLICIES - speech_sessions
 
 DROP POLICY IF EXISTS "speech_sessions_select_policy" ON public.speech_sessions;
 CREATE POLICY "speech_sessions_select_policy" ON public.speech_sessions
@@ -213,7 +213,7 @@ CREATE POLICY "speech_sessions_update_policy" ON public.speech_sessions
         owns_child(child_id) OR is_linked_to_child(child_id)
     );
 
--- POLICIES — speech_attempts
+-- POLICIES - speech_attempts
 
 DROP POLICY IF EXISTS "speech_attempts_select_policy" ON public.speech_attempts;
 CREATE POLICY "speech_attempts_select_policy" ON public.speech_attempts

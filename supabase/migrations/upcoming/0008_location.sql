@@ -12,7 +12,7 @@ CREATE TYPE location_entity_type AS ENUM ('member', 'child');
 -- ----------------------------------------------------------------------------
 -- latest_locations
 -- One row per tracked entity. Upserted on every location update.
--- Used for the live family map — fast single-row lookup per entity.
+-- Used for the live family map - fast single-row lookup per entity.
 -- ----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.latest_locations (
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.latest_locations (
 -- location_history
 -- Append-only log of all location pings. Used for track replay and SOS
 -- context. Retention policy (e.g. 30 days) should be applied via a scheduled
--- job or pg_cron — not enforced at schema level.
+-- job or pg_cron - not enforced at schema level.
 -- ----------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.location_history (
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.location_history (
 CREATE UNIQUE INDEX IF NOT EXISTS uk_latest_locations_entity
     ON public.latest_locations (entity_type, entity_id);
 
--- Location history ordered by time per entity — the primary query pattern.
+-- Location history ordered by time per entity - the primary query pattern.
 CREATE INDEX IF NOT EXISTS idx_location_history_entity_time
     ON public.location_history (entity_type, entity_id, recorded_at DESC);
 
@@ -63,7 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_latest_locations_geom
 ALTER TABLE public.latest_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.location_history ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — latest_locations
+-- POLICIES - latest_locations
 
 DROP POLICY IF EXISTS "latest_locations_select_policy" ON public.latest_locations;
 CREATE POLICY "latest_locations_select_policy" ON public.latest_locations
@@ -89,7 +89,7 @@ CREATE POLICY "latest_locations_upsert_policy" ON public.latest_locations
     FOR ALL USING (entity_id = auth.uid())
     WITH CHECK (entity_id = auth.uid());
 
--- POLICIES — location_history
+-- POLICIES - location_history
 
 DROP POLICY IF EXISTS "location_history_select_policy" ON public.location_history;
 CREATE POLICY "location_history_select_policy" ON public.location_history

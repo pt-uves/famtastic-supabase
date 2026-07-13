@@ -21,8 +21,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
 -- ============================================================================
 -- COMMENTS SECTION
 -- ============================================================================
 
 COMMENT ON FUNCTION public.uuid_generate_v7() IS 'Generates a UUID version 7 based on the current timestamp.';
+COMMENT ON FUNCTION public.set_updated_at()   IS 'Generic BEFORE UPDATE trigger that stamps updated_at = CURRENT_TIMESTAMP on every row update.';

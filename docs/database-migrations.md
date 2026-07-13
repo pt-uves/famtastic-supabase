@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS your_table (
     id              UUID             PRIMARY KEY DEFAULT uuid_generate_v7(),
     name            TEXT             NOT NULL,
     status          your_enum_type   NOT NULL DEFAULT 'value1',
-    created_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP
-    -- updated_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP -- Add only if needed, update manually
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMPTZ      NOT NULL DEFAULT CURRENT_TIMESTAMP  -- add on any mutable table; kept current by the set_updated_at() trigger
 );
 
 -- ----------------------------------------------------------------------------
@@ -39,13 +39,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS uk_your_table_name ON your_table (name);
 -- TRIGGERS
 -- ----------------------------------------------------------------------------
 
--- Note: We do NOT use triggers for updated_at. It should be updated manually.
--- Example of a custom trigger:
-DROP TRIGGER IF EXISTS trigger_your_table_custom ON your_table;
-CREATE TRIGGER trigger_your_table_custom
-    BEFORE INSERT ON your_table
+-- Any table with an updated_at column gets the shared set_updated_at() trigger
+-- (defined once in 0001) so the timestamp is always correct - including writes
+-- from service-role edge functions that bypass RLS.
+DROP TRIGGER IF EXISTS trigger_your_table_set_updated_at ON your_table;
+CREATE TRIGGER trigger_your_table_set_updated_at
+    BEFORE UPDATE ON your_table
     FOR EACH ROW
-    EXECUTE FUNCTION some_custom_function();
+    EXECUTE FUNCTION public.set_updated_at();
 
 -- ============================================================================
 -- COMMENTS SECTION
@@ -56,7 +57,7 @@ COMMENT ON COLUMN your_table.id IS 'Unique identifier (UUID v7).';
 COMMENT ON COLUMN your_table.name IS 'Display name.';
 COMMENT ON COLUMN your_table.status IS 'Lifecycle status.';
 COMMENT ON COLUMN your_table.created_at IS 'Record creation timestamp.';
--- COMMENT ON COLUMN your_table.updated_at IS 'Last update timestamp.';
+COMMENT ON COLUMN your_table.updated_at IS 'Last-modified timestamp, stamped by the set_updated_at() trigger.';
 -- Repeat COMMENT ON TABLE and COMMENT ON COLUMN for milam_ and omnigrowthos_ tables
 ```
 
@@ -81,7 +82,7 @@ Every statement must be safe to run multiple times:
 | Enum         | `DROP TYPE IF EXISTS ... CASCADE` then `CREATE TYPE`                                             |
 | Column add   | `DO $$ BEGIN ALTER TABLE ... ADD COLUMN ...; EXCEPTION WHEN duplicate_column THEN NULL; END $$;` |
 
-Use `uuid_generate_v7()` — never `gen_random_uuid()` or `uuid_generate_v4()`.
+Use `uuid_generate_v7()` - never `gen_random_uuid()` or `uuid_generate_v4()`.
 
 ## Naming Conventions
 

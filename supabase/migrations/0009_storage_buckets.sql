@@ -2,7 +2,7 @@
 -- STORAGE BUCKETS
 -- ============================================================================
 -- Creates the three storage buckets required for Milestone 1.
--- All buckets are private — no public access. Clients use pre-signed URLs.
+-- All buckets are private - no public access. Clients use pre-signed URLs.
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- RLS POLICIES — avatars
+-- RLS POLICIES - avatars
 -- ============================================================================
 -- Path convention: avatars/{user_id}/{filename}
 -- Only the owner can upload/delete; any authenticated user can read
@@ -72,7 +72,7 @@ CREATE POLICY "avatars_delete_policy" ON storage.objects
     );
 
 -- ============================================================================
--- RLS POLICIES — voice-notes
+-- RLS POLICIES - voice-notes
 -- ============================================================================
 -- Path convention: voice-notes/{child_id}/{check_in_id}/{filename}
 -- Upload: only members linked to the child.
@@ -111,7 +111,7 @@ CREATE POLICY "voice_notes_delete_policy" ON storage.objects
     );
 
 -- ============================================================================
--- RLS POLICIES — child-photos
+-- RLS POLICIES - child-photos
 -- ============================================================================
 -- Path convention: child-photos/{child_id}/{filename}
 -- Upload/delete: only the parent who owns the child.

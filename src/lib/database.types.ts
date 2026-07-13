@@ -34,127 +34,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      app_settings: {
+      check_in_prompts: {
         Row: {
-          created_at: string
-          key: string
-          updated_at: string
-          value: Json
-        }
-        Insert: {
-          created_at?: string
-          key: string
-          updated_at?: string
-          value: Json
-        }
-        Update: {
-          created_at?: string
-          key?: string
-          updated_at?: string
-          value?: Json
-        }
-        Relationships: []
-      }
-      audit_log: {
-        Row: {
-          action: string
-          actor_profile_id: string | null
+          child_id: string
           created_at: string
           id: string
-          metadata: Json | null
-          target_id: string | null
-          target_table: string | null
+          initiated_by: string
+          question_text: string | null
+          reply_check_in_id: string | null
+          scheduled_at: string | null
+          sent_at: string | null
           updated_at: string
         }
         Insert: {
-          action: string
-          actor_profile_id?: string | null
+          child_id: string
           created_at?: string
           id?: string
-          metadata?: Json | null
-          target_id?: string | null
-          target_table?: string | null
+          initiated_by: string
+          question_text?: string | null
+          reply_check_in_id?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
           updated_at?: string
         }
         Update: {
-          action?: string
-          actor_profile_id?: string | null
+          child_id?: string
           created_at?: string
           id?: string
-          metadata?: Json | null
-          target_id?: string | null
-          target_table?: string | null
+          initiated_by?: string
+          question_text?: string | null
+          reply_check_in_id?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "audit_log_actor_profile_id_fkey"
-            columns: ["actor_profile_id"]
+            foreignKeyName: "fk_check_in_prompts_child"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_check_in_prompts_initiated_by"
+            columns: ["initiated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_check_in_prompts_reply"
+            columns: ["reply_check_in_id"]
+            isOneToOne: false
+            referencedRelation: "check_ins"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      badges: {
-        Row: {
-          created_at: string
-          description: string | null
-          icon_url: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          icon_url?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          icon_url?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       check_ins: {
         Row: {
+          author_id: string | null
+          child_id: string | null
           created_at: string
-          family_id: string
           id: string
-          initiated_by: string | null
-          member_id: string
-          mood: Database["public"]["Enums"]["mood_type"]
+          is_from_child: boolean
+          mood: Database["public"]["Enums"]["mood"]
           shared_with_family: boolean
           text_response: string | null
           updated_at: string
           voice_note_url: string | null
         }
         Insert: {
+          author_id?: string | null
+          child_id?: string | null
           created_at?: string
-          family_id: string
           id?: string
-          initiated_by?: string | null
-          member_id: string
-          mood: Database["public"]["Enums"]["mood_type"]
+          is_from_child?: boolean
+          mood: Database["public"]["Enums"]["mood"]
           shared_with_family?: boolean
           text_response?: string | null
           updated_at?: string
           voice_note_url?: string | null
         }
         Update: {
+          author_id?: string | null
+          child_id?: string | null
           created_at?: string
-          family_id?: string
           id?: string
-          initiated_by?: string | null
-          member_id?: string
-          mood?: Database["public"]["Enums"]["mood_type"]
+          is_from_child?: boolean
+          mood?: Database["public"]["Enums"]["mood"]
           shared_with_family?: boolean
           text_response?: string | null
           updated_at?: string
@@ -162,342 +131,76 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "check_ins_family_id_fkey"
-            columns: ["family_id"]
+            foreignKeyName: "fk_check_ins_author"
+            columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "families"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "check_ins_initiated_by_fkey"
-            columns: ["initiated_by"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "check_ins_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      child_badges: {
-        Row: {
-          badge_id: string
-          child_id: string
-          created_at: string
-          earned_at: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          badge_id: string
-          child_id: string
-          created_at?: string
-          earned_at?: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          badge_id?: string
-          child_id?: string
-          created_at?: string
-          earned_at?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "child_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "badges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "child_badges_child_id_fkey"
+            foreignKeyName: "fk_check_ins_child"
             columns: ["child_id"]
             isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
         ]
       }
-      child_profiles: {
+      children: {
         Row: {
-          condition_tags: string[] | null
+          child_mode_device_id: string | null
+          child_mode_enabled: boolean
+          communication_preferences: string | null
           created_at: string
-          dob: string | null
+          date_of_birth: string | null
+          diagnosis: string | null
+          family_id: string
+          gender: Database["public"]["Enums"]["gender"] | null
+          id: string
           language_level: Database["public"]["Enums"]["language_level"]
-          member_id: string
+          location_sharing_enabled: boolean
+          name: string
           photo_url: string | null
+          special_notes: string | null
           updated_at: string
         }
         Insert: {
-          condition_tags?: string[] | null
+          child_mode_device_id?: string | null
+          child_mode_enabled?: boolean
+          communication_preferences?: string | null
           created_at?: string
-          dob?: string | null
-          language_level?: Database["public"]["Enums"]["language_level"]
-          member_id: string
-          photo_url?: string | null
-          updated_at?: string
-        }
-        Update: {
-          condition_tags?: string[] | null
-          created_at?: string
-          dob?: string | null
-          language_level?: Database["public"]["Enums"]["language_level"]
-          member_id?: string
-          photo_url?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "child_profiles_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: true
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      child_provider_invites: {
-        Row: {
-          child_member_id: string
-          code: string
-          contact: string
-          created_at: string
-          expires_at: string
-          id: string
-          invited_by: string | null
-          provider_type: Database["public"]["Enums"]["provider_type"]
-          updated_at: string
-          used_at: string | null
-        }
-        Insert: {
-          child_member_id: string
-          code: string
-          contact: string
-          created_at?: string
-          expires_at: string
-          id?: string
-          invited_by?: string | null
-          provider_type: Database["public"]["Enums"]["provider_type"]
-          updated_at?: string
-          used_at?: string | null
-        }
-        Update: {
-          child_member_id?: string
-          code?: string
-          contact?: string
-          created_at?: string
-          expires_at?: string
-          id?: string
-          invited_by?: string | null
-          provider_type?: Database["public"]["Enums"]["provider_type"]
-          updated_at?: string
-          used_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "child_provider_invites_child_member_id_fkey"
-            columns: ["child_member_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "child_provider_invites_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      child_providers: {
-        Row: {
-          access_scope: string[]
-          child_member_id: string
-          created_at: string
-          id: string
-          invited_by: string | null
-          provider_profile_id: string | null
-          provider_type: Database["public"]["Enums"]["provider_type"]
-          status: Database["public"]["Enums"]["provider_status"]
-          updated_at: string
-        }
-        Insert: {
-          access_scope?: string[]
-          child_member_id: string
-          created_at?: string
-          id?: string
-          invited_by?: string | null
-          provider_profile_id?: string | null
-          provider_type: Database["public"]["Enums"]["provider_type"]
-          status?: Database["public"]["Enums"]["provider_status"]
-          updated_at?: string
-        }
-        Update: {
-          access_scope?: string[]
-          child_member_id?: string
-          created_at?: string
-          id?: string
-          invited_by?: string | null
-          provider_profile_id?: string | null
-          provider_type?: Database["public"]["Enums"]["provider_type"]
-          status?: Database["public"]["Enums"]["provider_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "child_providers_child_member_id_fkey"
-            columns: ["child_member_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "child_providers_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "child_providers_provider_profile_id_fkey"
-            columns: ["provider_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      content_variants: {
-        Row: {
-          created_at: string
-          field_key: string
-          id: string
-          level: Database["public"]["Enums"]["language_level"]
-          screen_key: string
-          text: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          field_key: string
-          id?: string
-          level: Database["public"]["Enums"]["language_level"]
-          screen_key: string
-          text: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          field_key?: string
-          id?: string
-          level?: Database["public"]["Enums"]["language_level"]
-          screen_key?: string
-          text?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      coping_strategies: {
-        Row: {
-          animation_key: string | null
-          created_at: string
-          family_id: string | null
-          icon_url: string | null
-          id: string
-          is_global: boolean
-          mood: Database["public"]["Enums"]["mood_type"]
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          animation_key?: string | null
-          created_at?: string
-          family_id?: string | null
-          icon_url?: string | null
-          id?: string
-          is_global?: boolean
-          mood: Database["public"]["Enums"]["mood_type"]
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          animation_key?: string | null
-          created_at?: string
-          family_id?: string | null
-          icon_url?: string | null
-          id?: string
-          is_global?: boolean
-          mood?: Database["public"]["Enums"]["mood_type"]
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "coping_strategies_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      custom_word_lists: {
-        Row: {
-          added_by: string | null
-          child_id: string
-          created_at: string
+          date_of_birth?: string | null
+          diagnosis?: string | null
           family_id: string
-          id: string
-          phonetic_hint: string | null
-          updated_at: string
-          word: string
-        }
-        Insert: {
-          added_by?: string | null
-          child_id: string
-          created_at?: string
-          family_id: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
-          phonetic_hint?: string | null
+          language_level?: Database["public"]["Enums"]["language_level"]
+          location_sharing_enabled?: boolean
+          name: string
+          photo_url?: string | null
+          special_notes?: string | null
           updated_at?: string
-          word: string
         }
         Update: {
-          added_by?: string | null
-          child_id?: string
+          child_mode_device_id?: string | null
+          child_mode_enabled?: boolean
+          communication_preferences?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          diagnosis?: string | null
           family_id?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
-          phonetic_hint?: string | null
+          language_level?: Database["public"]["Enums"]["language_level"]
+          location_sharing_enabled?: boolean
+          name?: string
+          photo_url?: string | null
+          special_notes?: string | null
           updated_at?: string
-          word?: string
         }
         Relationships: [
           {
-            foreignKeyName: "custom_word_lists_added_by_fkey"
-            columns: ["added_by"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custom_word_lists_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custom_word_lists_family_id_fkey"
+            foreignKeyName: "fk_children_family"
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
@@ -507,38 +210,45 @@ export type Database = {
       }
       emergency_contacts: {
         Row: {
+          added_by: string | null
+          child_id: string
           created_at: string
-          family_id: string
           id: string
           name: string
           phone: string
-          relation: string | null
           updated_at: string
         }
         Insert: {
+          added_by?: string | null
+          child_id: string
           created_at?: string
-          family_id: string
           id?: string
           name: string
           phone: string
-          relation?: string | null
           updated_at?: string
         }
         Update: {
+          added_by?: string | null
+          child_id?: string
           created_at?: string
-          family_id?: string
           id?: string
           name?: string
           phone?: string
-          relation?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "emergency_contacts_family_id_fkey"
-            columns: ["family_id"]
+            foreignKeyName: "fk_emergency_contacts_added_by"
+            columns: ["added_by"]
             isOneToOne: false
-            referencedRelation: "families"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_emergency_contacts_child"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
         ]
@@ -546,375 +256,95 @@ export type Database = {
       families: {
         Row: {
           created_at: string
-          created_by: string | null
           id: string
-          language_default: string | null
+          leaderboard_enabled: boolean
           name: string
+          owner_id: string
+          status: Database["public"]["Enums"]["family_status"]
           updated_at: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
           id?: string
-          language_default?: string | null
+          leaderboard_enabled?: boolean
           name: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["family_status"]
           updated_at?: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
           id?: string
-          language_default?: string | null
+          leaderboard_enabled?: boolean
           name?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["family_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "families_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "fk_families_owner"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      family_invites: {
+      memberships: {
         Row: {
-          code: string
-          contact: string | null
+          account_id: string
+          child_id: string
           created_at: string
-          expires_at: string
-          family_id: string
           id: string
-          role: Database["public"]["Enums"]["family_role"]
-          updated_at: string
-          used_at: string | null
-        }
-        Insert: {
-          code: string
-          contact?: string | null
-          created_at?: string
-          expires_at: string
-          family_id: string
-          id?: string
-          role: Database["public"]["Enums"]["family_role"]
-          updated_at?: string
-          used_at?: string | null
-        }
-        Update: {
-          code?: string
-          contact?: string | null
-          created_at?: string
-          expires_at?: string
-          family_id?: string
-          id?: string
-          role?: Database["public"]["Enums"]["family_role"]
-          updated_at?: string
-          used_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "family_invites_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      family_members: {
-        Row: {
-          created_at: string
-          family_id: string
-          id: string
-          joined_at: string
-          profile_id: string | null
-          role: Database["public"]["Enums"]["family_role"]
-          status: Database["public"]["Enums"]["member_status"]
-          status_label: string | null
+          invite_status: Database["public"]["Enums"]["invite_status"]
+          invited_by: string | null
+          role_category: Database["public"]["Enums"]["membership_role"]
+          role_label: string | null
           updated_at: string
         }
         Insert: {
+          account_id: string
+          child_id: string
           created_at?: string
-          family_id: string
           id?: string
-          joined_at?: string
-          profile_id?: string | null
-          role: Database["public"]["Enums"]["family_role"]
-          status?: Database["public"]["Enums"]["member_status"]
-          status_label?: string | null
+          invite_status?: Database["public"]["Enums"]["invite_status"]
+          invited_by?: string | null
+          role_category: Database["public"]["Enums"]["membership_role"]
+          role_label?: string | null
           updated_at?: string
         }
         Update: {
+          account_id?: string
+          child_id?: string
           created_at?: string
-          family_id?: string
           id?: string
-          joined_at?: string
-          profile_id?: string | null
-          role?: Database["public"]["Enums"]["family_role"]
-          status?: Database["public"]["Enums"]["member_status"]
-          status_label?: string | null
+          invite_status?: Database["public"]["Enums"]["invite_status"]
+          invited_by?: string | null
+          role_category?: Database["public"]["Enums"]["membership_role"]
+          role_label?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "family_members_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "family_members_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "fk_memberships_account"
+            columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      habit_logs: {
-        Row: {
-          completed: boolean
-          created_at: string
-          date: string
-          habit_id: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          completed?: boolean
-          created_at?: string
-          date: string
-          habit_id: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          completed?: boolean
-          created_at?: string
-          date?: string
-          habit_id?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "habit_logs_habit_id_fkey"
-            columns: ["habit_id"]
-            isOneToOne: false
-            referencedRelation: "habits"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      habits: {
-        Row: {
-          child_id: string
-          created_at: string
-          family_id: string
-          id: string
-          name: string
-          target_frequency: number
-          updated_at: string
-        }
-        Insert: {
-          child_id: string
-          created_at?: string
-          family_id: string
-          id?: string
-          name: string
-          target_frequency?: number
-          updated_at?: string
-        }
-        Update: {
-          child_id?: string
-          created_at?: string
-          family_id?: string
-          id?: string
-          name?: string
-          target_frequency?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "habits_child_id_fkey"
+            foreignKeyName: "fk_memberships_child"
             columns: ["child_id"]
             isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "habits_family_id_fkey"
-            columns: ["family_id"]
+            foreignKeyName: "fk_memberships_invited_by"
+            columns: ["invited_by"]
             isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      location_sharing_prefs: {
-        Row: {
-          active_hours: Json | null
-          created_at: string
-          member_id: string
-          updated_at: string
-          visibility: Database["public"]["Enums"]["location_visibility"]
-        }
-        Insert: {
-          active_hours?: Json | null
-          created_at?: string
-          member_id: string
-          updated_at?: string
-          visibility?: Database["public"]["Enums"]["location_visibility"]
-        }
-        Update: {
-          active_hours?: Json | null
-          created_at?: string
-          member_id?: string
-          updated_at?: string
-          visibility?: Database["public"]["Enums"]["location_visibility"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "location_sharing_prefs_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: true
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      member_locations: {
-        Row: {
-          created_at: string
-          id: string
-          lat: number
-          lng: number
-          member_id: string
-          recorded_at: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          lat: number
-          lng: number
-          member_id: string
-          recorded_at?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          lat?: number
-          lng?: number
-          member_id?: string
-          recorded_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "member_locations_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      nudges: {
-        Row: {
-          created_at: string
-          family_id: string
-          from_member: string
-          id: string
-          message: string | null
-          read_at: string | null
-          to_member: string
-          trigger_reason: string | null
-          updated_at: string
-          variant: Database["public"]["Enums"]["nudge_variant"]
-        }
-        Insert: {
-          created_at?: string
-          family_id: string
-          from_member: string
-          id?: string
-          message?: string | null
-          read_at?: string | null
-          to_member: string
-          trigger_reason?: string | null
-          updated_at?: string
-          variant: Database["public"]["Enums"]["nudge_variant"]
-        }
-        Update: {
-          created_at?: string
-          family_id?: string
-          from_member?: string
-          id?: string
-          message?: string | null
-          read_at?: string | null
-          to_member?: string
-          trigger_reason?: string | null
-          updated_at?: string
-          variant?: Database["public"]["Enums"]["nudge_variant"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "nudges_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nudges_from_member_fkey"
-            columns: ["from_member"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nudges_to_member_fkey"
-            columns: ["to_member"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      points_ledger: {
-        Row: {
-          child_id: string
-          created_at: string
-          delta: number
-          id: string
-          reason: string | null
-          updated_at: string
-        }
-        Insert: {
-          child_id: string
-          created_at?: string
-          delta: number
-          id?: string
-          reason?: string | null
-          updated_at?: string
-        }
-        Update: {
-          child_id?: string
-          created_at?: string
-          delta?: number
-          id?: string
-          reason?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "points_ledger_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -923,676 +353,1182 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string
           full_name: string | null
           id: string
-          role_global: Database["public"]["Enums"]["role_global_type"]
+          location_tracking_end: string | null
+          location_tracking_start: string | null
+          location_visibility: Database["public"]["Enums"]["location_visibility"]
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email: string
           full_name?: string | null
           id: string
-          role_global?: Database["public"]["Enums"]["role_global_type"]
+          location_tracking_end?: string | null
+          location_tracking_start?: string | null
+          location_visibility?: Database["public"]["Enums"]["location_visibility"]
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string
           full_name?: string | null
           id?: string
-          role_global?: Database["public"]["Enums"]["role_global_type"]
+          location_tracking_end?: string | null
+          location_tracking_start?: string | null
+          location_visibility?: Database["public"]["Enums"]["location_visibility"]
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
       }
-      push_campaigns: {
+      spatial_ref_sys: {
         Row: {
-          body: string | null
-          created_at: string
-          id: string
-          scheduled_at: string | null
-          sent_at: string | null
-          target_audience: string | null
-          title: string
-          updated_at: string
+          auth_name: string | null
+          auth_srid: number | null
+          proj4text: string | null
+          srid: number
+          srtext: string | null
         }
         Insert: {
-          body?: string | null
-          created_at?: string
-          id?: string
-          scheduled_at?: string | null
-          sent_at?: string | null
-          target_audience?: string | null
-          title: string
-          updated_at?: string
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid: number
+          srtext?: string | null
         }
         Update: {
-          body?: string | null
-          created_at?: string
-          id?: string
-          scheduled_at?: string | null
-          sent_at?: string | null
-          target_audience?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      reward_redemptions: {
-        Row: {
-          approved_by: string | null
-          child_id: string
-          created_at: string
-          id: string
-          item_id: string
-          status: Database["public"]["Enums"]["redemption_status"]
-          updated_at: string
-        }
-        Insert: {
-          approved_by?: string | null
-          child_id: string
-          created_at?: string
-          id?: string
-          item_id: string
-          status?: Database["public"]["Enums"]["redemption_status"]
-          updated_at?: string
-        }
-        Update: {
-          approved_by?: string | null
-          child_id?: string
-          created_at?: string
-          id?: string
-          item_id?: string
-          status?: Database["public"]["Enums"]["redemption_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reward_redemptions_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reward_redemptions_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reward_redemptions_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "reward_shop_items"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reward_shop_items: {
-        Row: {
-          cost_points: number
-          created_at: string
-          family_id: string | null
-          icon_url: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          cost_points: number
-          created_at?: string
-          family_id?: string | null
-          icon_url?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          cost_points?: number
-          created_at?: string
-          family_id?: string | null
-          icon_url?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reward_shop_items_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      routine_completions: {
-        Row: {
-          child_id: string
-          created_at: string
-          date: string
-          id: string
-          routine_id: string
-          steps_done: Json
-          updated_at: string
-        }
-        Insert: {
-          child_id: string
-          created_at?: string
-          date: string
-          id?: string
-          routine_id: string
-          steps_done?: Json
-          updated_at?: string
-        }
-        Update: {
-          child_id?: string
-          created_at?: string
-          date?: string
-          id?: string
-          routine_id?: string
-          steps_done?: Json
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "routine_completions_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "routine_completions_routine_id_fkey"
-            columns: ["routine_id"]
-            isOneToOne: false
-            referencedRelation: "routines"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      routine_steps: {
-        Row: {
-          created_at: string
-          icon: string | null
-          id: string
-          name: string
-          order_index: number
-          routine_id: string
-          time_allocation_minutes: number | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          name: string
-          order_index?: number
-          routine_id: string
-          time_allocation_minutes?: number | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          icon?: string | null
-          id?: string
-          name?: string
-          order_index?: number
-          routine_id?: string
-          time_allocation_minutes?: number | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "routine_steps_routine_id_fkey"
-            columns: ["routine_id"]
-            isOneToOne: false
-            referencedRelation: "routines"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      routines: {
-        Row: {
-          child_id: string
-          created_at: string
-          family_id: string
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          child_id: string
-          created_at?: string
-          family_id: string
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          child_id?: string
-          created_at?: string
-          family_id?: string
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "routines_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "routines_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      sos_alerts: {
-        Row: {
-          created_at: string
-          family_id: string
-          id: string
-          lat: number | null
-          lng: number | null
-          resolved_at: string | null
-          resolved_by: string | null
-          status: Database["public"]["Enums"]["sos_status"]
-          triggered_by: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          family_id: string
-          id?: string
-          lat?: number | null
-          lng?: number | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          status?: Database["public"]["Enums"]["sos_status"]
-          triggered_by: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          family_id?: string
-          id?: string
-          lat?: number | null
-          lng?: number | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          status?: Database["public"]["Enums"]["sos_status"]
-          triggered_by?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sos_alerts_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sos_alerts_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sos_alerts_triggered_by_fkey"
-            columns: ["triggered_by"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      sos_cooldowns: {
-        Row: {
-          created_at: string
-          last_triggered_at: string
-          member_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          last_triggered_at?: string
-          member_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          last_triggered_at?: string
-          member_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sos_cooldowns_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: true
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      speech_attempts: {
-        Row: {
-          ai_feedback: string | null
-          ai_score: number | null
-          alternatives: Json | null
-          attempt_number: number
-          child_id: string
-          confidence: number | null
-          created_at: string
-          custom_word_id: string | null
-          exercise_id: string | null
-          id: string
-          transcript: string | null
-          updated_at: string
-        }
-        Insert: {
-          ai_feedback?: string | null
-          ai_score?: number | null
-          alternatives?: Json | null
-          attempt_number?: number
-          child_id: string
-          confidence?: number | null
-          created_at?: string
-          custom_word_id?: string | null
-          exercise_id?: string | null
-          id?: string
-          transcript?: string | null
-          updated_at?: string
-        }
-        Update: {
-          ai_feedback?: string | null
-          ai_score?: number | null
-          alternatives?: Json | null
-          attempt_number?: number
-          child_id?: string
-          confidence?: number | null
-          created_at?: string
-          custom_word_id?: string | null
-          exercise_id?: string | null
-          id?: string
-          transcript?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "speech_attempts_child_id_fkey"
-            columns: ["child_id"]
-            isOneToOne: false
-            referencedRelation: "family_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "speech_attempts_custom_word_id_fkey"
-            columns: ["custom_word_id"]
-            isOneToOne: false
-            referencedRelation: "custom_word_lists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "speech_attempts_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "speech_exercises"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      speech_exercises: {
-        Row: {
-          audio_url: string | null
-          category: string | null
-          created_at: string
-          difficulty: Database["public"]["Enums"]["speech_difficulty"]
-          id: string
-          image_url: string | null
-          phonetic_hint: string | null
-          target_word: string
-          updated_at: string
-        }
-        Insert: {
-          audio_url?: string | null
-          category?: string | null
-          created_at?: string
-          difficulty?: Database["public"]["Enums"]["speech_difficulty"]
-          id?: string
-          image_url?: string | null
-          phonetic_hint?: string | null
-          target_word: string
-          updated_at?: string
-        }
-        Update: {
-          audio_url?: string | null
-          category?: string | null
-          created_at?: string
-          difficulty?: Database["public"]["Enums"]["speech_difficulty"]
-          id?: string
-          image_url?: string | null
-          phonetic_hint?: string | null
-          target_word?: string
-          updated_at?: string
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid?: number
+          srtext?: string | null
         }
         Relationships: []
       }
       task_categories: {
         Row: {
-          color: string
+          child_id: string | null
+          color_hex: string
           created_at: string
-          family_id: string | null
+          created_by: string | null
           id: string
+          is_system: boolean
           name: string
-          updated_at: string
         }
         Insert: {
-          color: string
+          child_id?: string | null
+          color_hex: string
           created_at?: string
-          family_id?: string | null
+          created_by?: string | null
           id?: string
+          is_system?: boolean
           name: string
-          updated_at?: string
         }
         Update: {
-          color?: string
+          child_id?: string | null
+          color_hex?: string
           created_at?: string
-          family_id?: string | null
+          created_by?: string | null
           id?: string
+          is_system?: boolean
           name?: string
-          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "task_categories_family_id_fkey"
-            columns: ["family_id"]
+            foreignKeyName: "fk_task_categories_child"
+            columns: ["child_id"]
             isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      task_verifications: {
-        Row: {
-          created_at: string
-          id: string
-          notes: string | null
-          photo_url: string | null
-          task_id: string
-          updated_at: string
-          verified_at: string
-          verified_by: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          photo_url?: string | null
-          task_id: string
-          updated_at?: string
-          verified_at?: string
-          verified_by?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          photo_url?: string | null
-          task_id?: string
-          updated_at?: string
-          verified_at?: string
-          verified_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "task_verifications_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "task_verifications_verified_by_fkey"
-            columns: ["verified_by"]
+            foreignKeyName: "fk_task_categories_created_by"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       tasks: {
         Row: {
-          assignee_id: string | null
+          approved_at: string | null
+          approved_by: string | null
           category_id: string | null
+          child_id: string
           created_at: string
-          created_by: string | null
-          date: string
-          family_id: string
-          google_event_id: string | null
+          created_by: string
+          description: string | null
+          due_at: string | null
+          google_calendar_event_id: string | null
           id: string
+          name: string
+          photo_proof_url: string | null
+          points_awarded: number | null
           priority: Database["public"]["Enums"]["task_priority"]
-          reminder_at: string | null
-          requires_verification: boolean
           status: Database["public"]["Enums"]["task_status"]
-          time: string | null
-          title: string
           updated_at: string
-          verification_type: Database["public"]["Enums"]["verification_type"]
+          verification_type: Database["public"]["Enums"]["task_verification"]
         }
         Insert: {
-          assignee_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           category_id?: string | null
+          child_id: string
           created_at?: string
-          created_by?: string | null
-          date: string
-          family_id: string
-          google_event_id?: string | null
+          created_by: string
+          description?: string | null
+          due_at?: string | null
+          google_calendar_event_id?: string | null
           id?: string
+          name: string
+          photo_proof_url?: string | null
+          points_awarded?: number | null
           priority?: Database["public"]["Enums"]["task_priority"]
-          reminder_at?: string | null
-          requires_verification?: boolean
           status?: Database["public"]["Enums"]["task_status"]
-          time?: string | null
-          title: string
           updated_at?: string
-          verification_type?: Database["public"]["Enums"]["verification_type"]
+          verification_type?: Database["public"]["Enums"]["task_verification"]
         }
         Update: {
-          assignee_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           category_id?: string | null
+          child_id?: string
           created_at?: string
-          created_by?: string | null
-          date?: string
-          family_id?: string
-          google_event_id?: string | null
+          created_by?: string
+          description?: string | null
+          due_at?: string | null
+          google_calendar_event_id?: string | null
           id?: string
+          name?: string
+          photo_proof_url?: string | null
+          points_awarded?: number | null
           priority?: Database["public"]["Enums"]["task_priority"]
-          reminder_at?: string | null
-          requires_verification?: boolean
           status?: Database["public"]["Enums"]["task_status"]
-          time?: string | null
-          title?: string
           updated_at?: string
-          verification_type?: Database["public"]["Enums"]["verification_type"]
+          verification_type?: Database["public"]["Enums"]["task_verification"]
         }
         Relationships: [
           {
-            foreignKeyName: "tasks_assignee_id_fkey"
-            columns: ["assignee_id"]
+            foreignKeyName: "fk_tasks_approved_by"
+            columns: ["approved_by"]
             isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tasks_category_id_fkey"
+            foreignKeyName: "fk_tasks_category"
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "task_categories"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tasks_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "fk_tasks_child"
+            columns: ["child_id"]
             isOneToOne: false
-            referencedRelation: "family_members"
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tasks_family_id_fkey"
-            columns: ["family_id"]
+            foreignKeyName: "fk_tasks_created_by"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "families"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      geography_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geography_column: unknown
+          f_table_catalog: unknown
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      geometry_columns: {
+        Row: {
+          coord_dimension: number | null
+          f_geometry_column: unknown
+          f_table_catalog: string | null
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Insert: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Update: {
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      has_provider_access: {
-        Args: { p_child_member_id: string; p_scope: string }
+      _postgis_deprecate: {
+        Args: { newname: string; oldname: string; version: string }
+        Returns: undefined
+      }
+      _postgis_index_extent: {
+        Args: { col: string; tbl: unknown }
+        Returns: unknown
+      }
+      _postgis_pgsql_version: { Args: never; Returns: string }
+      _postgis_scripts_pgsql_version: { Args: never; Returns: string }
+      _postgis_selectivity: {
+        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown }
+        Returns: number
+      }
+      _postgis_stats: {
+        Args: { ""?: string; att_name: string; tbl: unknown }
+        Returns: string
+      }
+      _st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
         Returns: boolean
       }
-      is_family_member: { Args: { p_family_id: string }; Returns: boolean }
+      _st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_crosses: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _st_intersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      _st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      _st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      _st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_sortablehash: { Args: { geom: unknown }; Returns: number }
+      _st_touches: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_voronoi: {
+        Args: {
+          clip?: unknown
+          g1: unknown
+          return_polygons?: boolean
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      addauth: { Args: { "": string }; Returns: boolean }
+      addgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              new_dim: number
+              new_srid_in: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
+      disablelongtransactions: { Args: never; Returns: string }
+      dropgeometrycolumn:
+        | {
+            Args: {
+              catalog_name: string
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { column_name: string; table_name: string }; Returns: string }
+      dropgeometrytable:
+        | {
+            Args: {
+              catalog_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
+          }
+        | { Args: { schema_name: string; table_name: string }; Returns: string }
+        | { Args: { table_name: string }; Returns: string }
+      enablelongtransactions: { Args: never; Returns: string }
+      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      geometry: { Args: { "": string }; Returns: unknown }
+      geometry_above: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_below: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_cmp: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_contained_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_contains_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_distance_box: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_distance_centroid: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      geometry_eq: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_ge: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_gt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_le: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_left: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_lt: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overabove: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overbelow: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overlaps_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overleft: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_overright: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_right: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_same_3d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geometry_within: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geomfromewkt: { Args: { "": string }; Returns: unknown }
+      gettransactionid: { Args: never; Returns: unknown }
+      is_family_owner: { Args: { p_family_id: string }; Returns: boolean }
+      is_linked_to_child: { Args: { p_child_id: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
-      member_family_id: { Args: { p_member_id: string }; Returns: string }
-      my_member_id: { Args: { p_family_id: string }; Returns: string }
+      longtransactionsenabled: { Args: never; Returns: boolean }
+      owns_child: { Args: { p_child_id: string }; Returns: boolean }
+      populate_geometry_columns:
+        | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
+        | { Args: { use_typmod?: boolean }; Returns: string }
+      postgis_constraint_dims: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_srid: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
+      postgis_constraint_type: {
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: string
+      }
+      postgis_extensions_upgrade: { Args: never; Returns: string }
+      postgis_full_version: { Args: never; Returns: string }
+      postgis_geos_version: { Args: never; Returns: string }
+      postgis_lib_build_date: { Args: never; Returns: string }
+      postgis_lib_revision: { Args: never; Returns: string }
+      postgis_lib_version: { Args: never; Returns: string }
+      postgis_libjson_version: { Args: never; Returns: string }
+      postgis_liblwgeom_version: { Args: never; Returns: string }
+      postgis_libprotobuf_version: { Args: never; Returns: string }
+      postgis_libxml_version: { Args: never; Returns: string }
+      postgis_proj_version: { Args: never; Returns: string }
+      postgis_scripts_build_date: { Args: never; Returns: string }
+      postgis_scripts_installed: { Args: never; Returns: string }
+      postgis_scripts_released: { Args: never; Returns: string }
+      postgis_svn_version: { Args: never; Returns: string }
+      postgis_type_name: {
+        Args: {
+          coord_dimension: number
+          geomname: string
+          use_new_name?: boolean
+        }
+        Returns: string
+      }
+      postgis_version: { Args: never; Returns: string }
+      postgis_wagyu_version: { Args: never; Returns: string }
+      shares_child_with: { Args: { p_other_account: string }; Returns: boolean }
+      st_3dclosestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3ddistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_3dintersects: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_3dlongestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3dmakebox: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_3dmaxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_3dshortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_addpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_angle:
+        | { Args: { line1: unknown; line2: unknown }; Returns: number }
+        | {
+            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown }
+            Returns: number
+          }
+      st_area:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_asencodedpolyline: {
+        Args: { geom: unknown; nprecision?: number }
+        Returns: string
+      }
+      st_asewkt: { Args: { "": string }; Returns: string }
+      st_asgeojson:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom_column?: string
+              maxdecimaldigits?: number
+              pretty_bool?: boolean
+              r: Record<string, unknown>
+            }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_asgml:
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+            }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+        | {
+            Args: {
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
+      st_askml:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_aslatlontext: {
+        Args: { geom: unknown; tmpl?: string }
+        Returns: string
+      }
+      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string }
+      st_asmvtgeom: {
+        Args: {
+          bounds: unknown
+          buffer?: number
+          clip_geom?: boolean
+          extent?: number
+          geom: unknown
+        }
+        Returns: unknown
+      }
+      st_assvg:
+        | {
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | {
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
+          }
+        | { Args: { "": string }; Returns: string }
+      st_astext: { Args: { "": string }; Returns: string }
+      st_astwkb:
+        | {
+            Args: {
+              geom: unknown
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              geom: unknown[]
+              ids: number[]
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
+      st_asx3d: {
+        Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+        Returns: string
+      }
+      st_azimuth:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: number }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_boundingdiagonal: {
+        Args: { fits?: boolean; geom: unknown }
+        Returns: unknown
+      }
+      st_buffer:
+        | {
+            Args: { geom: unknown; options?: string; radius: number }
+            Returns: unknown
+          }
+        | {
+            Args: { geom: unknown; quadsegs: number; radius: number }
+            Returns: unknown
+          }
+      st_centroid: { Args: { "": string }; Returns: unknown }
+      st_clipbybox2d: {
+        Args: { box: unknown; geom: unknown }
+        Returns: unknown
+      }
+      st_closestpoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_concavehull: {
+        Args: {
+          param_allow_holes?: boolean
+          param_geom: unknown
+          param_pctconvex: number
+        }
+        Returns: unknown
+      }
+      st_contains: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_containsproperly: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_coorddim: { Args: { geometry: unknown }; Returns: number }
+      st_coveredby:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_covers:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_curvetoline: {
+        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number }
+        Returns: unknown
+      }
+      st_delaunaytriangles: {
+        Args: { flags?: number; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_difference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_disjoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_distance:
+        | {
+            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean }
+            Returns: number
+          }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+      st_distancesphere:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
+        | {
+            Args: { geom1: unknown; geom2: unknown; radius: number }
+            Returns: number
+          }
+      st_distancespheroid: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_dwithin: {
+        Args: {
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_expand:
+        | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown }
+        | {
+            Args: { box: unknown; dx: number; dy: number; dz?: number }
+            Returns: unknown
+          }
+        | {
+            Args: {
+              dm?: number
+              dx: number
+              dy: number
+              dz?: number
+              geom: unknown
+            }
+            Returns: unknown
+          }
+      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown }
+      st_force3dm: {
+        Args: { geom: unknown; mvalue?: number }
+        Returns: unknown
+      }
+      st_force3dz: {
+        Args: { geom: unknown; zvalue?: number }
+        Returns: unknown
+      }
+      st_force4d: {
+        Args: { geom: unknown; mvalue?: number; zvalue?: number }
+        Returns: unknown
+      }
+      st_generatepoints:
+        | { Args: { area: unknown; npoints: number }; Returns: unknown }
+        | {
+            Args: { area: unknown; npoints: number; seed: number }
+            Returns: unknown
+          }
+      st_geogfromtext: { Args: { "": string }; Returns: unknown }
+      st_geographyfromtext: { Args: { "": string }; Returns: unknown }
+      st_geohash:
+        | { Args: { geog: unknown; maxchars?: number }; Returns: string }
+        | { Args: { geom: unknown; maxchars?: number }; Returns: string }
+      st_geomcollfromtext: { Args: { "": string }; Returns: unknown }
+      st_geometricmedian: {
+        Args: {
+          fail_if_not_converged?: boolean
+          g: unknown
+          max_iter?: number
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      st_geometryfromtext: { Args: { "": string }; Returns: unknown }
+      st_geomfromewkt: { Args: { "": string }; Returns: unknown }
+      st_geomfromgeojson:
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": Json }; Returns: unknown }
+        | { Args: { "": string }; Returns: unknown }
+      st_geomfromgml: { Args: { "": string }; Returns: unknown }
+      st_geomfromkml: { Args: { "": string }; Returns: unknown }
+      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown }
+      st_geomfromtext: { Args: { "": string }; Returns: unknown }
+      st_gmltosql: { Args: { "": string }; Returns: unknown }
+      st_hasarc: { Args: { geometry: unknown }; Returns: boolean }
+      st_hausdorffdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_hexagon: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_hexagongrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_interpolatepoint: {
+        Args: { line: unknown; point: unknown }
+        Returns: number
+      }
+      st_intersection: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_intersects:
+        | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_isvaliddetail: {
+        Args: { flags?: number; geom: unknown }
+        Returns: Database["public"]["CompositeTypes"]["valid_detail"]
+        SetofOptions: {
+          from: "*"
+          to: "valid_detail"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      st_length:
+        | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
+        | { Args: { "": string }; Returns: number }
+      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown }
+      st_linecrossingdirection: {
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
+      st_linefromencodedpolyline: {
+        Args: { nprecision?: number; txtin: string }
+        Returns: unknown
+      }
+      st_linefromtext: { Args: { "": string }; Returns: unknown }
+      st_linelocatepoint: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown }
+      st_locatealong: {
+        Args: { geometry: unknown; leftrightoffset?: number; measure: number }
+        Returns: unknown
+      }
+      st_locatebetween: {
+        Args: {
+          frommeasure: number
+          geometry: unknown
+          leftrightoffset?: number
+          tomeasure: number
+        }
+        Returns: unknown
+      }
+      st_locatebetweenelevations: {
+        Args: { fromelevation: number; geometry: unknown; toelevation: number }
+        Returns: unknown
+      }
+      st_longestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makebox2d: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makeline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_makevalid: {
+        Args: { geom: unknown; params: string }
+        Returns: unknown
+      }
+      st_maxdistance: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_minimumboundingcircle: {
+        Args: { inputgeom: unknown; segs_per_quarter?: number }
+        Returns: unknown
+      }
+      st_mlinefromtext: { Args: { "": string }; Returns: unknown }
+      st_mpointfromtext: { Args: { "": string }; Returns: unknown }
+      st_mpolyfromtext: { Args: { "": string }; Returns: unknown }
+      st_multilinestringfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipointfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipolygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_node: { Args: { g: unknown }; Returns: unknown }
+      st_normalize: { Args: { geom: unknown }; Returns: unknown }
+      st_offsetcurve: {
+        Args: { distance: number; line: unknown; params?: string }
+        Returns: unknown
+      }
+      st_orderingequals: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_overlaps: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_perimeter: {
+        Args: { geog: unknown; use_spheroid?: boolean }
+        Returns: number
+      }
+      st_pointfromtext: { Args: { "": string }; Returns: unknown }
+      st_pointm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointz: {
+        Args: {
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_pointzm: {
+        Args: {
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_polyfromtext: { Args: { "": string }; Returns: unknown }
+      st_polygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_project: {
+        Args: { azimuth: number; distance: number; geog: unknown }
+        Returns: unknown
+      }
+      st_quantizecoordinates: {
+        Args: {
+          g: unknown
+          prec_m?: number
+          prec_x: number
+          prec_y?: number
+          prec_z?: number
+        }
+        Returns: unknown
+      }
+      st_reduceprecision: {
+        Args: { geom: unknown; gridsize: number }
+        Returns: unknown
+      }
+      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string }
+      st_removerepeatedpoints: {
+        Args: { geom: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_segmentize: {
+        Args: { geog: unknown; max_segment_length: number }
+        Returns: unknown
+      }
+      st_setsrid:
+        | { Args: { geog: unknown; srid: number }; Returns: unknown }
+        | { Args: { geom: unknown; srid: number }; Returns: unknown }
+      st_sharedpaths: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_shortestline: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_simplifypolygonhull: {
+        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number }
+        Returns: unknown
+      }
+      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+      st_square: {
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
+      st_squaregrid: {
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
+      st_srid:
+        | { Args: { geog: unknown }; Returns: number }
+        | { Args: { geom: unknown }; Returns: number }
+      st_subdivide: {
+        Args: { geom: unknown; gridsize?: number; maxvertices?: number }
+        Returns: unknown[]
+      }
+      st_swapordinates: {
+        Args: { geom: unknown; ords: unknown }
+        Returns: unknown
+      }
+      st_symdifference: {
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
+      st_symmetricdifference: {
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_tileenvelope: {
+        Args: {
+          bounds?: unknown
+          margin?: number
+          x: number
+          y: number
+          zoom: number
+        }
+        Returns: unknown
+      }
+      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_transform:
+        | {
+            Args: { from_proj: string; geom: unknown; to_proj: string }
+            Returns: unknown
+          }
+        | {
+            Args: { from_proj: string; geom: unknown; to_srid: number }
+            Returns: unknown
+          }
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown }
+      st_union:
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
+        | {
+            Args: { geom1: unknown; geom2: unknown; gridsize: number }
+            Returns: unknown
+          }
+      st_voronoilines: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_voronoipolygons: {
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_wkbtosql: { Args: { wkb: string }; Returns: unknown }
+      st_wkttosql: { Args: { "": string }; Returns: unknown }
+      st_wrapx: {
+        Args: { geom: unknown; move: number; wrap: number }
+        Returns: unknown
+      }
+      unlockrows: { Args: { "": string }; Returns: number }
+      updategeometrysrid: {
+        Args: {
+          catalogn_name: string
+          column_name: string
+          new_srid_in: number
+          schema_name: string
+          table_name: string
+        }
+        Returns: string
+      }
       uuid_generate_v7: { Args: never; Returns: string }
     }
     Enums: {
-      family_role: "family_admin" | "family_member" | "child"
+      family_status: "active" | "suspended"
+      gender: "male" | "female" | "other" | "prefer_not_to_say"
+      invite_status: "pending" | "accepted" | "declined"
       language_level: "simple" | "standard" | "full"
-      location_visibility: "all" | "parents_only" | "none"
-      member_status: "active" | "invited" | "removed"
-      mood_type: "angry" | "overwhelmed" | "calm" | "happy"
-      nudge_variant: "concern" | "encouragement" | "task_reminder"
-      provider_status: "invited" | "active" | "removed"
-      provider_type: "doctor" | "therapist" | "teacher" | "other"
-      redemption_status: "pending" | "approved" | "denied"
-      role_global_type: "user" | "platform_admin"
-      sos_status: "active" | "resolved"
-      speech_difficulty: "easy" | "medium" | "hard"
+      location_visibility: "all_family" | "only_parents" | "nobody"
+      membership_role:
+        | "co_parent"
+        | "caregiver"
+        | "grandparent"
+        | "teacher"
+        | "therapist"
+        | "relative"
+        | "other"
+      mood: "happy" | "calm" | "overwhelmed" | "angry"
       task_priority: "low" | "medium" | "high"
-      task_status: "pending" | "completed" | "awaiting_verification" | "overdue"
-      verification_type: "photo" | "adult_approval" | "none"
+      task_status:
+        | "pending"
+        | "in_progress"
+        | "awaiting_verification"
+        | "completed"
+        | "overdue"
+      task_verification: "none" | "photo_proof" | "adult_approval"
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
-      [_ in never]: never
+      geometry_dump: {
+        path: number[] | null
+        geom: unknown
+      }
+      valid_detail: {
+        valid: boolean | null
+        reason: string | null
+        location: unknown
+      }
     }
   }
 }
@@ -1720,21 +1656,31 @@ export const Constants = {
   },
   public: {
     Enums: {
-      family_role: ["family_admin", "family_member", "child"],
+      family_status: ["active", "suspended"],
+      gender: ["male", "female", "other", "prefer_not_to_say"],
+      invite_status: ["pending", "accepted", "declined"],
       language_level: ["simple", "standard", "full"],
-      location_visibility: ["all", "parents_only", "none"],
-      member_status: ["active", "invited", "removed"],
-      mood_type: ["angry", "overwhelmed", "calm", "happy"],
-      nudge_variant: ["concern", "encouragement", "task_reminder"],
-      provider_status: ["invited", "active", "removed"],
-      provider_type: ["doctor", "therapist", "teacher", "other"],
-      redemption_status: ["pending", "approved", "denied"],
-      role_global_type: ["user", "platform_admin"],
-      sos_status: ["active", "resolved"],
-      speech_difficulty: ["easy", "medium", "hard"],
+      location_visibility: ["all_family", "only_parents", "nobody"],
+      membership_role: [
+        "co_parent",
+        "caregiver",
+        "grandparent",
+        "teacher",
+        "therapist",
+        "relative",
+        "other",
+      ],
+      mood: ["happy", "calm", "overwhelmed", "angry"],
       task_priority: ["low", "medium", "high"],
-      task_status: ["pending", "completed", "awaiting_verification", "overdue"],
-      verification_type: ["photo", "adult_approval", "none"],
+      task_status: [
+        "pending",
+        "in_progress",
+        "awaiting_verification",
+        "completed",
+        "overdue",
+      ],
+      task_verification: ["none", "photo_proof", "adult_approval"],
+      user_role: ["user", "admin"],
     },
   },
 } as const

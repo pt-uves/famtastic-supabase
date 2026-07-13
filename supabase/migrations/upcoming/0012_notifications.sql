@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_push_tokens_user_id
 
 ALTER TABLE public.push_tokens ENABLE ROW LEVEL SECURITY;
 
--- POLICIES — push_tokens
+-- POLICIES - push_tokens
 
 DROP POLICY IF EXISTS "push_tokens_select_policy" ON public.push_tokens;
 CREATE POLICY "push_tokens_select_policy" ON public.push_tokens
