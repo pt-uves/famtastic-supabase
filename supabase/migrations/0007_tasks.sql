@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     priority                    task_priority           NOT NULL DEFAULT 'medium',
     status                      task_status             NOT NULL DEFAULT 'pending',
     verification_type           task_verification       NOT NULL DEFAULT 'none',
-    photo_proof_url             TEXT,
+    photo_proof_path            TEXT,
     approved_by                 UUID,
     approved_at                 TIMESTAMPTZ,
     points_awarded              SMALLINT,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     CONSTRAINT chk_tasks_completion_verified CHECK (
         status <> 'completed'
         OR verification_type = 'none'
-        OR (verification_type = 'photo_proof'    AND photo_proof_url IS NOT NULL)
+        OR (verification_type = 'photo_proof'    AND photo_proof_path IS NOT NULL)
         OR (verification_type = 'adult_approval' AND approved_by IS NOT NULL)
     ),
     CONSTRAINT chk_tasks_points CHECK (points_awarded >= 0 AND points_awarded <= 5)
@@ -217,7 +217,7 @@ COMMENT ON COLUMN public.tasks.due_at                           IS 'Timestamp th
 COMMENT ON COLUMN public.tasks.priority                         IS 'Task urgency: low, medium, or high.';
 COMMENT ON COLUMN public.tasks.status                           IS 'Current lifecycle state of the task.';
 COMMENT ON COLUMN public.tasks.verification_type                IS 'How completion is verified: none, photo proof, or adult approval.';
-COMMENT ON COLUMN public.tasks.photo_proof_url                  IS 'URL of the uploaded photo proof (Supabase Storage).';
+COMMENT ON COLUMN public.tasks.photo_proof_path                IS 'Storage object path of the uploaded photo proof in the child-photos bucket (e.g. child-photos/{child_id}/{file}). Frontend signs on demand; never store the signed URL.';
 COMMENT ON COLUMN public.tasks.approved_by                      IS 'Adult member who approved the task completion.';
 COMMENT ON COLUMN public.tasks.approved_at                      IS 'Timestamp of approval.';
 COMMENT ON COLUMN public.tasks.points_awarded                   IS 'Fixed point amount awarded upon task completion.';

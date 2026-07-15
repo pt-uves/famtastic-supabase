@@ -17,7 +17,8 @@
     "db:lint": "supabase db lint",
     "db:inspect": "supabase inspect db bloat",
     "db:seed": "supabase db reset",
-    "db:snapshot": "bash scripts/snapshot-local-data.sh"
+    "db:secrets": "bash scripts/set-vault-secrets.sh",
+    "db:reset:dev": "supabase db reset && bash scripts/set-vault-secrets.sh"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.110.0",

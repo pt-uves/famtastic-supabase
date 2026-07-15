@@ -74,9 +74,13 @@ CREATE POLICY "avatars_delete_policy" ON storage.objects
 -- ============================================================================
 -- RLS POLICIES - voice-notes
 -- ============================================================================
--- Path convention: voice-notes/{child_id}/{check_in_id}/{filename}
--- Upload: only members linked to the child.
--- Read: only members linked to the child.
+-- Path conventions:
+--   child check-in : voice-notes/{child_id}/{check_in_id}/{filename}
+--   adult self     : voice-notes/self/{user_id}/{check_in_id}/{filename}
+-- A self check-in has child_id NULL, so it has no child folder to scope to;
+-- its notes live under 'self/{user_id}' and only that user can read/write them.
+-- The CASE guards the ::uuid cast so the literal 'self' is never cast to uuid.
+-- Upload/read: members linked to the child, or the owning user for self notes.
 -- ============================================================================
 
 DROP POLICY IF EXISTS "voice_notes_select_policy" ON storage.objects;
@@ -84,9 +88,13 @@ CREATE POLICY "voice_notes_select_policy" ON storage.objects
     FOR SELECT USING (
         bucket_id = 'voice-notes'
         AND (
-            public.owns_child((storage.foldername(name))[1]::uuid)
-            OR public.is_linked_to_child((storage.foldername(name))[1]::uuid)
-            OR public.is_platform_admin()
+            public.is_platform_admin()
+            OR CASE
+                 WHEN (storage.foldername(name))[1] = 'self'
+                 THEN (storage.foldername(name))[2] = auth.uid()::text
+                 ELSE public.owns_child((storage.foldername(name))[1]::uuid)
+                   OR public.is_linked_to_child((storage.foldername(name))[1]::uuid)
+               END
         )
     );
 
@@ -94,10 +102,12 @@ DROP POLICY IF EXISTS "voice_notes_insert_policy" ON storage.objects;
 CREATE POLICY "voice_notes_insert_policy" ON storage.objects
     FOR INSERT WITH CHECK (
         bucket_id = 'voice-notes'
-        AND (
-            public.owns_child((storage.foldername(name))[1]::uuid)
-            OR public.is_linked_to_child((storage.foldername(name))[1]::uuid)
-        )
+        AND CASE
+              WHEN (storage.foldername(name))[1] = 'self'
+              THEN (storage.foldername(name))[2] = auth.uid()::text
+              ELSE public.owns_child((storage.foldername(name))[1]::uuid)
+                OR public.is_linked_to_child((storage.foldername(name))[1]::uuid)
+            END
     );
 
 DROP POLICY IF EXISTS "voice_notes_delete_policy" ON storage.objects;
@@ -105,8 +115,12 @@ CREATE POLICY "voice_notes_delete_policy" ON storage.objects
     FOR DELETE USING (
         bucket_id = 'voice-notes'
         AND (
-            public.owns_child((storage.foldername(name))[1]::uuid)
-            OR public.is_platform_admin()
+            public.is_platform_admin()
+            OR CASE
+                 WHEN (storage.foldername(name))[1] = 'self'
+                 THEN (storage.foldername(name))[2] = auth.uid()::text
+                 ELSE public.owns_child((storage.foldername(name))[1]::uuid)
+               END
         )
     );
 

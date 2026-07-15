@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS public.children (
     name                        TEXT            NOT NULL,
     date_of_birth               DATE,
     gender                      gender,
-    photo_url                   TEXT,
+    photo_path                  TEXT,
     diagnosis                   TEXT,
     special_notes               TEXT,
     language_level              language_level  NOT NULL DEFAULT 'standard',
@@ -61,6 +61,10 @@ CREATE TABLE IF NOT EXISTS public.children (
 
 -- Each owner can own only one family.
 CREATE UNIQUE INDEX IF NOT EXISTS uk_families_owner ON public.families (owner_id);
+
+-- Case-insensitive substring search on family name (admin portal family search).
+CREATE INDEX IF NOT EXISTS idx_families_name_trgm
+    ON public.families USING gin (name extensions.gin_trgm_ops);
 
 ALTER TABLE public.families DROP CONSTRAINT IF EXISTS fk_families_owner;
 ALTER TABLE public.families ADD CONSTRAINT fk_families_owner
@@ -120,7 +124,7 @@ COMMENT ON COLUMN public.children.family_id                 IS 'Family this chil
 COMMENT ON COLUMN public.children.name                      IS 'Child first name or display name.';
 COMMENT ON COLUMN public.children.date_of_birth             IS 'Used to calculate age for UI display and analytics.';
 COMMENT ON COLUMN public.children.gender                    IS 'Child gender - stored as an enum for consistent filtering.';
-COMMENT ON COLUMN public.children.photo_url                 IS 'Child profile photo stored in Supabase Storage.';
+COMMENT ON COLUMN public.children.photo_path                IS 'Storage object path of the child profile photo in the child-photos bucket (e.g. child-photos/{child_id}/{file}). Frontend signs on demand; never store the signed URL.';
 COMMENT ON COLUMN public.children.diagnosis                 IS 'Free-text primary diagnosis (e.g. Autism, ADHD, Speech Delay).';
 COMMENT ON COLUMN public.children.special_notes             IS 'Free-text notes visible to all linked members.';
 COMMENT ON COLUMN public.children.language_level            IS 'UI language complexity for this child.';

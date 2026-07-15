@@ -3,8 +3,11 @@
 -- ============================================================================
 
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pg_cron SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pg_net SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS supabase_vault WITH SCHEMA vault;
 
 -- ============================================================================
 -- API ROLE GRANTS
@@ -57,8 +60,11 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 -- ============================================================================
 
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography types - used for location tracking and SOS location snapshots.';
+COMMENT ON EXTENSION pg_trgm IS 'Trigram matching - backs the GIN index on families.name for fast case-insensitive substring search in the admin portal.';
 COMMENT ON EXTENSION pg_cron IS 'PostgreSQL cron extension for scheduling background jobs.';
 COMMENT ON EXTENSION pg_net IS 'PostgreSQL networking extension for calling external APIs/Edge Functions.';
+COMMENT ON EXTENSION pgcrypto IS 'Cryptographic functions - used for bcrypt hashing of the Child Mode exit PIN (crypt/gen_salt).';
+COMMENT ON EXTENSION supabase_vault IS 'Encrypted secret storage; holds edge_base_url and push_webhook_secret for server-side edge-function calls (notification dispatch).';
 
 COMMENT ON SCHEMA public IS
     'Application schema. API roles (anon, authenticated, service_role) hold broad table/function grants (see migration 0002); Row Level Security is the real per-row access gate. service_role bypasses RLS.';

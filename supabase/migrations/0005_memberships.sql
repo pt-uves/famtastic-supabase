@@ -202,6 +202,39 @@ CREATE TRIGGER trigger_memberships_prevent_owner
     FOR EACH ROW
     EXECUTE FUNCTION public.prevent_owner_membership();
 
+-- ----------------------------------------------------------------------------
+-- account_id and child_id are the identity of the link and are immutable after
+-- insert. Without this, the memberships UPDATE policy (which an invitee can
+-- satisfy for their own row) would let a member repoint child_id to ANY child -
+-- instant unauthorised access to a child in another family. Re-linking to a
+-- different child is a new row, never an UPDATE. Runs on every write path,
+-- including service-role edge functions that bypass RLS.
+-- ----------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.prevent_membership_identity_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+    IF NEW.account_id IS DISTINCT FROM OLD.account_id THEN
+        RAISE EXCEPTION 'memberships.account_id is immutable (id=%).', OLD.id
+            USING ERRCODE = 'check_violation';
+    END IF;
+    IF NEW.child_id IS DISTINCT FROM OLD.child_id THEN
+        RAISE EXCEPTION 'memberships.child_id is immutable (id=%).', OLD.id
+            USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_memberships_prevent_identity_change ON public.memberships;
+CREATE TRIGGER trigger_memberships_prevent_identity_change
+    BEFORE UPDATE ON public.memberships
+    FOR EACH ROW
+    EXECUTE FUNCTION public.prevent_membership_identity_change();
+
 -- Keep updated_at current on every change.
 DROP TRIGGER IF EXISTS trigger_memberships_set_updated_at ON public.memberships;
 CREATE TRIGGER trigger_memberships_set_updated_at
@@ -236,11 +269,19 @@ DROP POLICY IF EXISTS "memberships_insert_policy" ON public.memberships;
 CREATE POLICY "memberships_insert_policy" ON public.memberships
     FOR INSERT WITH CHECK (owns_child(child_id));
 
+-- account_id / child_id are held immutable by the
+-- prevent_membership_identity_change() trigger, so the invitee branch here can
+-- only touch their own invite_status (accept/decline), never repoint the link.
 DROP POLICY IF EXISTS "memberships_update_policy" ON public.memberships;
 CREATE POLICY "memberships_update_policy" ON public.memberships
-    FOR UPDATE USING (
+    FOR UPDATE
+    USING (
         account_id = auth.uid()   -- member can accept/decline their own invite
         OR owns_child(child_id)   -- parent can update role/status
+    )
+    WITH CHECK (
+        account_id = auth.uid()
+        OR owns_child(child_id)
     );
 
 DROP POLICY IF EXISTS "memberships_delete_policy" ON public.memberships;
@@ -359,3 +400,4 @@ COMMENT ON FUNCTION public.is_linked_to_child(UUID)         IS 'Returns true if 
 COMMENT ON FUNCTION public.is_family_owner(UUID)            IS 'Returns true if the calling user owns the given family and it is active (not suspended).';
 COMMENT ON FUNCTION public.owns_child(UUID)                 IS 'Returns true if the calling user owns the active family that the given child belongs to. Returns false when the family is suspended.';
 COMMENT ON FUNCTION public.prevent_owner_membership()       IS 'Trigger function that blocks creating/updating a membership where the account owns the child''s family - a family owner is never a member of their own child.';
+COMMENT ON FUNCTION public.prevent_membership_identity_change() IS 'Trigger function that makes memberships.account_id and child_id immutable after insert, preventing a member from repointing their own membership to another child via UPDATE.';

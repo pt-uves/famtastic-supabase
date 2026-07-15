@@ -106,10 +106,23 @@ Deno.serve(async (req) => {
           },
         });
       if (inviteErr || !invited.user) {
-        throw inviteErr ?? new Error("Failed to create invited account.");
+        // A concurrent invite for the same brand-new email wins the race and
+        // creates the account first; inviteUserByEmail then fails on the
+        // duplicate. Fall back to the account that now exists instead of erroring.
+        const { data: raced } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (!raced) {
+          throw inviteErr ?? new Error("Failed to create invited account.");
+        }
+        accountId = raced.id;
+      } else {
+        accountId = invited.user.id;
+        createdNewAccount = true;
       }
-      accountId = invited.user.id;
-      createdNewAccount = true;
     }
 
     // A family owner already has full access to their own children and must never
@@ -121,62 +134,128 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create a pending membership per child. Never duplicate (unique on
+    // Create a pending membership per child. Every invite - brand-new account or
+    // existing - starts 'pending' and must be explicitly accepted by the invitee
+    // in the app; there is no auto-approval. Never duplicate (unique on
     // account_id, child_id) and never downgrade an already-accepted membership:
     // existing rows only get their role refreshed, new rows start 'pending'.
-    const { data: current, error: curErr } = await admin
-      .from("memberships")
-      .select("child_id")
-      .eq("account_id", accountId)
-      .in("child_id", child_ids);
-    if (curErr) throw curErr;
-
-    const currentMemberships = current as { child_id: string }[] | null;
-    const existingChildIds = new Set(
-      (currentMemberships ?? []).map((m) => m.child_id),
-    );
-
-    const toInsert = child_ids
-      .filter((id) => !existingChildIds.has(id))
-      .map((id) => ({
-        account_id: accountId,
-        child_id: id,
-        role_category,
-        role_label: role_label ?? null,
-        invited_by: user.id,
-        invite_status: "pending" as const,
-      }));
-
-    if (toInsert.length > 0) {
-      const { error: insErr } = await admin
+    // If any membership write fails after we just minted a brand-new account,
+    // that account is rolled back (deleted) so a failed link never leaves an
+    // orphaned account holding a dead-end set-password email.
+    let declinedChildIds: string[] = [];
+    let insertedChildIds: string[] = [];
+    try {
+      const { data: current, error: curErr } = await admin
         .from("memberships")
-        .insert(toInsert);
-      if (insErr) throw insErr;
-    }
+        .select("child_id, invite_status")
+        .eq("account_id", accountId)
+        .in("child_id", child_ids);
+      if (curErr) throw curErr;
 
-    if (existingChildIds.size > 0) {
-      const { error: updErr } = await admin
-        .from("memberships")
-        .update({
+      const currentMemberships = current as
+        | { child_id: string; invite_status: string }[]
+        | null;
+      const existingChildIds = new Set(
+        (currentMemberships ?? []).map((m) => m.child_id),
+      );
+      // A previously declined invite must be re-openable: reset it to 'pending'
+      // so the person can accept again. Never touch already-'accepted' rows.
+      declinedChildIds = (currentMemberships ?? [])
+        .filter((m) => m.invite_status === "declined")
+        .map((m) => m.child_id);
+
+      const toInsert = child_ids
+        .filter((id) => !existingChildIds.has(id))
+        .map((id) => ({
+          account_id: accountId,
+          child_id: id,
           role_category,
           role_label: role_label ?? null,
           invited_by: user.id,
-        })
-        .eq("account_id", accountId)
-        .in("child_id", [...existingChildIds]);
-      if (updErr) throw updErr;
+          invite_status: "pending" as const,
+        }));
+
+      insertedChildIds = toInsert.map((i) => i.child_id);
+
+      if (toInsert.length > 0) {
+        const { error: insErr } = await admin
+          .from("memberships")
+          .insert(toInsert);
+        if (insErr) throw insErr;
+      }
+
+      if (existingChildIds.size > 0) {
+        const { error: updErr } = await admin
+          .from("memberships")
+          .update({
+            role_category,
+            role_label: role_label ?? null,
+            invited_by: user.id,
+          })
+          .eq("account_id", accountId)
+          .in("child_id", [...existingChildIds]);
+        if (updErr) throw updErr;
+      }
+
+      // Re-open declined invites (account_id/child_id stay put, so the identity
+      // trigger is satisfied).
+      if (declinedChildIds.length > 0) {
+        const { error: reopenErr } = await admin
+          .from("memberships")
+          .update({ invite_status: "pending" })
+          .eq("account_id", accountId)
+          .in("child_id", declinedChildIds);
+        if (reopenErr) throw reopenErr;
+      }
+    } catch (linkErr) {
+      if (createdNewAccount && accountId) {
+        await admin.auth.admin.deleteUser(accountId);
+      }
+      throw linkErr;
     }
 
-    if (existing && toInsert.length > 0) {
-      const newChildNames = (childrenData ?? [])
-        .filter((c) => toInsert.some((ins) => ins.child_id === c.id))
-        .map((c) => c.name)
-        .join(", ");
+    // Notify existing accounts about children newly linked OR re-opened after a
+    // decline - these are 'pending' and need the invitee to respond. They get
+    // BOTH an in-app notification (per child, deep-linkable to Accept/Decline)
+    // and an email. Brand-new accounts already got the set-password invite email
+    // (and see the same Accept/Decline UI on first login), so they are not
+    // re-notified here.
+    if (existing) {
+      const notifyIds = new Set<string>([
+        ...insertedChildIds,
+        ...declinedChildIds,
+      ]);
+      const notifyChildren = (childrenData ?? []).filter((c) =>
+        notifyIds.has(c.id),
+      );
 
-      if (newChildNames) {
+      if (notifyChildren.length > 0) {
+        // In-app notification per child - rides the notifications -> send-push
+        // pipeline (push delivered + inbox row). Best-effort: a failed enqueue
+        // must not fail the invite, which already succeeded.
+        for (const c of notifyChildren) {
+          const { error: notifyErr } = await admin.rpc("enqueue_notification", {
+            p_title: "New family invitation",
+            p_body: `${inviter_name} invited you to ${c.name}`,
+            p_recipient_user_id: accountId,
+            p_entity_type: "membership_invite",
+            p_entity_id: c.id,
+            p_data: {
+              child_id: c.id,
+              role_label: role_label || role_category.replace("_", " "),
+            },
+          });
+          if (notifyErr) {
+            console.error(
+              "invite-member enqueue_notification error:",
+              notifyErr,
+            );
+          }
+        }
+
         const html = await getInviteExistingMemberHtml({
           inviter_name,
-          child_names: newChildNames,
+          child_names: notifyChildren.map((c) => c.name).join(", "),
           role_label: role_label || role_category.replace("_", " "),
         });
 
@@ -188,10 +267,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    // created_new_account is intentionally NOT returned: it would reveal to the
+    // caller whether the email already had an account (existence enumeration).
     return ok({
       account_id: accountId,
       invited_child_ids: child_ids,
-      created_new_account: createdNewAccount,
     });
   } catch (e) {
     if (e instanceof AuthError) return err(e.message, 401);

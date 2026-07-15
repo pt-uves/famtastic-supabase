@@ -41,8 +41,6 @@ export type Database = {
           id: string
           initiated_by: string
           question_text: string | null
-          reply_check_in_id: string | null
-          scheduled_at: string | null
           sent_at: string | null
           updated_at: string
         }
@@ -52,8 +50,6 @@ export type Database = {
           id?: string
           initiated_by: string
           question_text?: string | null
-          reply_check_in_id?: string | null
-          scheduled_at?: string | null
           sent_at?: string | null
           updated_at?: string
         }
@@ -63,8 +59,6 @@ export type Database = {
           id?: string
           initiated_by?: string
           question_text?: string | null
-          reply_check_in_id?: string | null
-          scheduled_at?: string | null
           sent_at?: string | null
           updated_at?: string
         }
@@ -83,13 +77,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_check_in_prompts_reply"
-            columns: ["reply_check_in_id"]
-            isOneToOne: false
-            referencedRelation: "check_ins"
-            referencedColumns: ["id"]
-          },
         ]
       }
       check_ins: {
@@ -100,10 +87,11 @@ export type Database = {
           id: string
           is_from_child: boolean
           mood: Database["public"]["Enums"]["mood"]
+          prompt_id: string | null
           shared_with_family: boolean
           text_response: string | null
           updated_at: string
-          voice_note_url: string | null
+          voice_note_path: string | null
         }
         Insert: {
           author_id?: string | null
@@ -112,10 +100,11 @@ export type Database = {
           id?: string
           is_from_child?: boolean
           mood: Database["public"]["Enums"]["mood"]
+          prompt_id?: string | null
           shared_with_family?: boolean
           text_response?: string | null
           updated_at?: string
-          voice_note_url?: string | null
+          voice_note_path?: string | null
         }
         Update: {
           author_id?: string | null
@@ -124,10 +113,11 @@ export type Database = {
           id?: string
           is_from_child?: boolean
           mood?: Database["public"]["Enums"]["mood"]
+          prompt_id?: string | null
           shared_with_family?: boolean
           text_response?: string | null
           updated_at?: string
-          voice_note_url?: string | null
+          voice_note_path?: string | null
         }
         Relationships: [
           {
@@ -142,6 +132,63 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_check_ins_prompt"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "check_in_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      child_mode_credentials: {
+        Row: {
+          created_at: string
+          failed_attempts: number
+          family_id: string
+          id: string
+          last_changed_at: string | null
+          locked_until: string | null
+          pin_hash: string
+          reset_requested_at: string | null
+          reset_token_expires_at: string | null
+          reset_token_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number
+          family_id: string
+          id?: string
+          last_changed_at?: string | null
+          locked_until?: string | null
+          pin_hash: string
+          reset_requested_at?: string | null
+          reset_token_expires_at?: string | null
+          reset_token_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number
+          family_id?: string
+          id?: string
+          last_changed_at?: string | null
+          locked_until?: string | null
+          pin_hash?: string
+          reset_requested_at?: string | null
+          reset_token_expires_at?: string | null
+          reset_token_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_child_mode_credentials_family"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
             referencedColumns: ["id"]
           },
         ]
@@ -160,7 +207,7 @@ export type Database = {
           language_level: Database["public"]["Enums"]["language_level"]
           location_sharing_enabled: boolean
           name: string
-          photo_url: string | null
+          photo_path: string | null
           special_notes: string | null
           updated_at: string
         }
@@ -177,7 +224,7 @@ export type Database = {
           language_level?: Database["public"]["Enums"]["language_level"]
           location_sharing_enabled?: boolean
           name: string
-          photo_url?: string | null
+          photo_path?: string | null
           special_notes?: string | null
           updated_at?: string
         }
@@ -194,7 +241,7 @@ export type Database = {
           language_level?: Database["public"]["Enums"]["language_level"]
           location_sharing_enabled?: boolean
           name?: string
-          photo_url?: string | null
+          photo_path?: string | null
           special_notes?: string | null
           updated_at?: string
         }
@@ -349,13 +396,84 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          last_error: string | null
+          priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
+          recipient_child_id: string | null
+          recipient_user_id: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          last_error?: string | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          recipient_child_id?: string | null
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          last_error?: string | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          recipient_child_id?: string | null
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_notifications_recipient_child"
+            columns: ["recipient_child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_notifications_recipient_user"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
           email: string
+          first_name: string | null
           full_name: string | null
           id: string
+          last_name: string | null
           location_tracking_end: string | null
           location_tracking_start: string | null
           location_visibility: Database["public"]["Enums"]["location_visibility"]
@@ -367,8 +485,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           full_name?: string | null
           id: string
+          last_name?: string | null
           location_tracking_end?: string | null
           location_tracking_start?: string | null
           location_visibility?: Database["public"]["Enums"]["location_visibility"]
@@ -380,8 +500,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           full_name?: string | null
           id?: string
+          last_name?: string | null
           location_tracking_end?: string | null
           location_tracking_start?: string | null
           location_visibility?: Database["public"]["Enums"]["location_visibility"]
@@ -390,6 +512,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          last_seen_at: string
+          platform: Database["public"]["Enums"]["push_platform"]
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          last_seen_at?: string
+          platform: Database["public"]["Enums"]["push_platform"]
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          last_seen_at?: string
+          platform?: Database["public"]["Enums"]["push_platform"]
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_push_tokens_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       spatial_ref_sys: {
         Row: {
@@ -473,7 +636,7 @@ export type Database = {
           google_calendar_event_id: string | null
           id: string
           name: string
-          photo_proof_url: string | null
+          photo_proof_path: string | null
           points_awarded: number | null
           priority: Database["public"]["Enums"]["task_priority"]
           status: Database["public"]["Enums"]["task_status"]
@@ -492,7 +655,7 @@ export type Database = {
           google_calendar_event_id?: string | null
           id?: string
           name: string
-          photo_proof_url?: string | null
+          photo_proof_path?: string | null
           points_awarded?: number | null
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
@@ -511,7 +674,7 @@ export type Database = {
           google_calendar_event_id?: string | null
           id?: string
           name?: string
-          photo_proof_url?: string | null
+          photo_proof_path?: string | null
           points_awarded?: number | null
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
@@ -595,6 +758,7 @@ export type Database = {
       }
     }
     Functions: {
+      _child_mode_family_id: { Args: never; Returns: string }
       _postgis_deprecate: {
         Args: { newname: string; oldname: string; version: string }
         Returns: undefined
@@ -684,6 +848,14 @@ export type Database = {
         Returns: unknown
       }
       _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      _validate_child_mode_pin_format: {
+        Args: { p_pin: string }
+        Returns: undefined
+      }
+      _verify_child_mode_pin: {
+        Args: { p_family_id: string; p_pin: string }
+        Returns: Json
+      }
       addauth: { Args: { "": string }; Returns: boolean }
       addgeometrycolumn:
         | {
@@ -722,6 +894,8 @@ export type Database = {
             }
             Returns: string
           }
+      child_mode_pin_status: { Args: never; Returns: Json }
+      create_child_mode_pin_reset: { Args: never; Returns: Json }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -754,7 +928,41 @@ export type Database = {
         | { Args: { schema_name: string; table_name: string }; Returns: string }
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
+      enqueue_child_family_notification: {
+        Args: {
+          p_body?: string
+          p_child_id: string
+          p_data?: Json
+          p_entity_id?: string
+          p_entity_type?: string
+          p_exclude_user_id?: string
+          p_priority?: Database["public"]["Enums"]["notification_priority"]
+          p_title: string
+        }
+        Returns: number
+      }
+      enqueue_notification: {
+        Args: {
+          p_body?: string
+          p_data?: Json
+          p_entity_id?: string
+          p_entity_type?: string
+          p_priority?: Database["public"]["Enums"]["notification_priority"]
+          p_recipient_child_id?: string
+          p_recipient_user_id?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      enter_child_mode: {
+        Args: { p_child_id: string; p_device_id?: string }
+        Returns: string
+      }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      exit_child_mode: {
+        Args: { p_child_id: string; p_pin: string }
+        Returns: Json
+      }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
@@ -858,6 +1066,7 @@ export type Database = {
       is_linked_to_child: { Args: { p_child_id: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      notification_edge_request: { Args: { p_body: Json }; Returns: undefined }
       owns_child: { Args: { p_child_id: string }; Returns: boolean }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
@@ -899,6 +1108,15 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      redeem_child_mode_pin_reset: {
+        Args: { p_new_pin: string; p_token: string }
+        Returns: undefined
+      }
+      retry_pending_notifications: { Args: never; Returns: number }
+      set_child_mode_pin: {
+        Args: { p_current_pin?: string; p_new_pin: string }
+        Returns: Json
+      }
       shares_child_with: { Args: { p_other_account: string }; Returns: boolean }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
@@ -1508,7 +1726,10 @@ export type Database = {
         | "therapist"
         | "relative"
         | "other"
-      mood: "happy" | "calm" | "overwhelmed" | "angry"
+      mood: "happy" | "sad" | "overwhelmed" | "angry"
+      notification_priority: "normal" | "high"
+      notification_status: "pending" | "sent" | "failed"
+      push_platform: "ios" | "android" | "web"
       task_priority: "low" | "medium" | "high"
       task_status:
         | "pending"
@@ -1670,7 +1891,10 @@ export const Constants = {
         "relative",
         "other",
       ],
-      mood: ["happy", "calm", "overwhelmed", "angry"],
+      mood: ["happy", "sad", "overwhelmed", "angry"],
+      notification_priority: ["normal", "high"],
+      notification_status: ["pending", "sent", "failed"],
+      push_platform: ["ios", "android", "web"],
       task_priority: ["low", "medium", "high"],
       task_status: [
         "pending",
